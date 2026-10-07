@@ -1,33 +1,25 @@
-import { useEffect, useState }      from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import Header                       from "./components/Header/Header";
-import Sidebar                      from "./components/Sidebar/Sidebar";
-import AppRoutes                    from "./routes/AppRoutes";
+import { useEffect, useState } from "react";
+import {
+  Navigate,
+  Route,
+  Routes,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
 
-const demoUsers = {
-  produtor: {
-    name:  "Marina Costa",
-    email: "marina@example.com",
-  },
-  logistica: {
-    name:  "José Oliveira",
-    email: "jose@example.com",
-  },
-  cliente: {
-    name: "Ana Rosa",
-    email: "ana@example.com",
-  },
-};
+import Header         from "./components/Header/Header";
+import Sidebar        from "./components/Sidebar/Sidebar";
+import Login          from "./pages/Login/Login";
+import SelecaoPerfil  from "./pages/SelecaoPerfil/SelecaoPerfil";
+import AppRoutes      from "./routes/AppRoutes";
 
 export default function App() {
-  const [profile, setProfile]       = useState("produtor");
+  const [user, setUser]             = useState(null);
+  const [profile, setProfile]       = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const location = useLocation();
   const navigate = useNavigate();
-
-  const user       = demoUsers[profile];
-  const alertCount = 0;
 
   useEffect(() => {
     setIsMenuOpen(false);
@@ -49,40 +41,103 @@ export default function App() {
     };
   }, [isMenuOpen]);
 
-  return (
-    <div className  ="app-layout">
-      <a classNam   ="skip-link" href="#main-content">
-        Ir para o conteúdo
-      </a>
+  function handleContinue(loginUser) {
+    setUser(loginUser);
+    setProfile(null);
+    navigate("/selecionar-perfil");
+  }
 
-      <Sidebar
-        user         ={user}
-        alertCount   ={alertCount}
-        systemOnline ={false}
-        isOpen       ={isMenuOpen}
-        onClose={()  => setIsMenuOpen(false)}
+  function handleSelectProfile(selectedProfile) {
+    setProfile(selectedProfile);
+    navigate("/dashboard");
+  }
+
+  function handleExit() {
+    setUser      (null);
+    setProfile   (null);
+    setIsMenuOpen(false);
+    navigate     ("/login", { replace: true });
+  }
+
+  const accessDestination = !user
+    ? "/login"
+    : !profile
+      ? "/selecionar-perfil"
+      : "/dashboard";
+
+  return (
+    <Routes>
+      <Route
+        path="/login"
+        element={
+          user ? (
+            <Navigate to={accessDestination} replace />
+          ) : (
+            <Login onContinue={handleContinue} />
+          )
+        }
       />
 
-      <div className="app-layout__body">
-        <Header
-          user                     ={user}
-          profile                  ={profile}
-          onProfileChange          ={setProfile}
-          alertCount               ={alertCount}
-          onNotificationsClick={() => navigate("/alertas")}
-          onMenuClick={()          => setIsMenuOpen((current) => !current)}
-          isMenuOpen={isMenuOpen}
-          isDemo
-        />
+      <Route
+        path="/selecionar-perfil"
+        element={
+          user ? (
+            <SelecaoPerfil
+              user     ={user}
+              onSelect ={handleSelectProfile}
+              onExit   ={handleExit}
+            />
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        }
+      />
 
-        <main
-          id         ="main-content"
-          className  ="app-layout__content"
-          tabIndex   ={-1}
-        >
-          <AppRoutes />
-        </main>
-      </div>
-    </div>
+      <Route
+        path="/*"
+        element={
+          !user || !profile ? (
+            <Navigate to={accessDestination} replace />
+          ) : (
+            <div className="app-layout">
+              <a className="skip-link" href="#main-content">
+                Ir para o conteúdo
+              </a>
+
+              <Sidebar
+                user         ={user}
+                alertCount   ={0}
+                systemOnline ={false}
+                isOpen       ={isMenuOpen}
+                onClose={()  => setIsMenuOpen(false)}
+                onLogout={handleExit}
+              />
+
+              <div className="app-layout__body">
+                <Header
+                  user            ={user}
+                  profile         ={profile}
+                  onProfileChange ={setProfile}
+                  alertCount      ={0}
+                  onNotificationsClick={() => navigate("/alertas")}
+                  onMenuClick={() =>
+                    setIsMenuOpen((current) => !current)
+                  }
+                  isMenuOpen={isMenuOpen}
+                />
+
+                <main
+                  id="main-content"
+                  className="app-layout__content"
+                  tabIndex={-1}
+                >
+                  <AppRoutes user={user} />
+                </main>
+              </div>
+            </div>
+          )
+        }
+      />
+    </Routes>
   );
 }
