@@ -3,76 +3,67 @@ import {
   Legend,
   Line,
   LineChart,
-  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
 
-import Card         from "../UI/Card";
-import EmptyState   from "../UI/EmptyState";
-import ErrorState   from "../UI/ErrorState";
+import Card from "../UI/Card";
+import EmptyState from "../UI/EmptyState";
+import ErrorState from "../UI/ErrorState";
 import LoadingState from "../UI/LoadingState";
 
 function formatTime(timestamp) {
   return new Intl.DateTimeFormat("pt-BR", {
-    hour:     "2-digit",
-    minute:   "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
     timeZone: "America/Fortaleza",
   }).format(new Date(timestamp));
 }
 
-function formatTemperature(value) {
-  return `${new Intl.NumberFormat("pt-BR", {
-    maximumFractionDigits: 1,
-  }).format(value)} °C`;
-}
-
 export default function ClimateChart({
-  readings  = [],
-  temperatureLimit,
-  loading   = false,
+  readings = [],
+  loading = false,
   error,
   onRetry,
 }) {
   const validReadings = readings
     .filter(
       (reading) =>
-        Number.isFinite   (new Date(reading.timestamp).getTime()) &&
-        (Number.isFinite  (reading.environmentTemperature) ||
-          Number.isFinite (reading.productTemperature))
+        Number.isFinite(new Date(reading.timestamp).getTime()) &&
+        (Number.isFinite(reading.temperature) ||
+          Number.isFinite(reading.humidity))
     )
     .map((reading) => ({
       timestamp: new Date(reading.timestamp).getTime(),
-      environmentTemperature: Number.isFinite(reading.environmentTemperature)
-        ? reading.environmentTemperature
+      temperature: Number.isFinite(reading.temperature)
+        ? reading.temperature
         : null,
-      productTemperature: Number.isFinite(reading.productTemperature)
-        ? reading.productTemperature
+      humidity: Number.isFinite(reading.humidity)
+        ? reading.humidity
         : null,
     }))
     .sort((a, b) => a.timestamp - b.timestamp);
 
   return (
     <Card
-      title="Ambiente × Produto"
-      description="Temperatura do ambiente refrigerado e próxima ao produto."
+      title="Monitoramento IoT — ThingSpeak"
+      description="Histórico de temperatura e umidade coletadas pelo protótipo."
     >
       {loading ? (
-        <LoadingState message="Carregando leituras de temperatura…" />
+        <LoadingState message="Carregando dados dos sensores…" />
       ) : error ? (
         <ErrorState message={error} onRetry={onRetry} />
       ) : validReadings.length === 0 ? (
         <EmptyState
           title="Nenhuma leitura disponível"
-          description="O gráfico aparecerá quando houver leituras dos sensores."
+          description="Ainda não existem leituras para exibir."
         />
       ) : (
         <div className="climate-chart">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
-              accessibilityLayer
               data={validReadings}
               margin={{ top: 20, right: 24, bottom: 12, left: 0 }}
             >
@@ -82,70 +73,64 @@ export default function ClimateChart({
               />
 
               <XAxis
-                dataKey       ="timestamp"
-                type          ="number"
-                scale         ="time"
-                domain        ={["dataMin", "dataMax"]}
-                tickFormatter ={formatTime}
-                tickLine      ={false}
-                axisLine      ={false}
-                minTickGap    ={32}
+                dataKey="timestamp"
+                type="number"
+                scale="time"
+                domain={["dataMin", "dataMax"]}
+                tickFormatter={formatTime}
+                tickLine={false}
+                axisLine={false}
               />
 
               <YAxis
-                unit      =" °C"
-                tickLine   ={false}
-                axisLine   ={false}
-                width      ={64}
-                domain     ={["auto", "auto"]}
+                yAxisId="temperatura"
+                unit=" °C"
+                tickLine={false}
+                axisLine={false}
+              />
+
+              <YAxis
+                yAxisId="umidade"
+                orientation="right"
+                unit=" %"
+                domain={[0, 100]}
+                tickLine={false}
+                axisLine={false}
               />
 
               <Tooltip
-                labelFormatter ={formatTime}
-                formatter      ={(value, name) => [
-                  formatTemperature(value),
+                labelFormatter={formatTime}
+                formatter={(value, name) => [
+                  `${Number(value).toLocaleString("pt-BR", {
+                    maximumFractionDigits: 2,
+                  })} ${name === "Temperatura" ? "°C" : "%"}`,
                   name,
                 ]}
               />
 
               <Legend />
 
-              {Number.isFinite(temperatureLimit) && (
-                <ReferenceLine
-                  y               ={temperatureLimit}
-                  stroke          ="var(--color-warning)"
-                  strokeDasharray ="5 5"
-                  ifOverflow      ="extendDomain"
-                  label={{
-                    value:    "Limite configurado",
-                    position: "insideTopRight",
-                    fill:     "var(--color-text-muted)",
-                    fontSize:  12,
-                  }}
-                />
-              )}
-
               <Line
-                name        ="Ambiente refrigerado"
-                dataKey     ="environmentTemperature"
-                type        ="linear"
-                stroke      ="var(--color-chart-environment)"
-                strokeWidth ={2}
+                yAxisId="temperatura"
+                name="Temperatura"
+                dataKey="temperature"
+                type="monotone"
+                stroke="var(--color-chart-environment)"
+                strokeWidth={2}
                 dot={validReadings.length === 1}
-                activeDot={{ r: 5 }}
-                connectNulls={false}
+                connectNulls
                 isAnimationActive={false}
               />
 
               <Line
-                name        ="Próximo ao produto"
-                dataKey     ="productTemperature"
-                type        ="linear"
-                stroke      ="var(--color-chart-product)"
-                strokeWidth ={2}
+                yAxisId="umidade"
+                name="Umidade"
+                dataKey="humidity"
+                type="monotone"
+                stroke="var(--color-chart-product)"
+                strokeWidth={2}
                 dot={validReadings.length === 1}
-                activeDot={{ r: 5 }}
-                connectNulls={false}
+                connectNulls
                 isAnimationActive={false}
               />
             </LineChart>

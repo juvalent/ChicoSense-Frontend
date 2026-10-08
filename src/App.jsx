@@ -13,6 +13,8 @@ import Login          from "./pages/Login/Login";
 import SelecaoPerfil  from "./pages/SelecaoPerfil/SelecaoPerfil";
 import AppRoutes      from "./routes/AppRoutes";
 
+
+
 export default function App() {
   const [user, setUser]             = useState(null);
   const [profile, setProfile]       = useState(null);
@@ -67,6 +69,11 @@ export default function App() {
 
   return (
     <Routes>
+
+      <Route
+        path="/"
+        element={<Navigate to="/login" replace />}
+      />
       <Route
         path="/login"
         element={
@@ -131,7 +138,7 @@ export default function App() {
                   className="app-layout__content"
                   tabIndex={-1}
                 >
-                  <AppRoutes user={user} />
+                  <AppRoutes user={user} profile={profile}/>
                 </main>
               </div>
             </div>

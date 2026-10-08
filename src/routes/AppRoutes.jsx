@@ -26,7 +26,7 @@ function InitialPage({ title }) {
   );
 }
 
-export default function AppRoutes({ user }) {
+export default function AppRoutes({ user, profile }) {
   return (
     <Routes>
       <Route
@@ -36,7 +36,7 @@ export default function AppRoutes({ user }) {
 
       <Route
         path="/dashboard"
-        element={<Dashboard user={user} />}
+        element={<Dashboard user={user} profile={profile} />}
       />
 
       {pages.map(({ path, title }) => (
