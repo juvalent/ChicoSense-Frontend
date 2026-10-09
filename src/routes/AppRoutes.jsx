@@ -1,15 +1,15 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import Card                        from "../components/UI/Card";
 import Dashboard                   from "../pages/Dashboard/Dashboard";
+import Viagens                     from "../pages/Viagens/Viagens";
+import Cargas                      from "../pages/Cargas/Cargas";
+import Monitoramento               from "../pages/Monitoramento/Monitoramento";
+import Alertas                     from "../pages/Alertas/Alertas";
+import Historico                   from "../pages/Historico/Historico";
+import ChicoSenseIA                from "../pages/ChicoSenseIA/ChicoSenseIA";
+import Configuracoes               from "../pages/Configuracoes/Configuracoes";
 
 const pages = [
-  { path: "/viagens",       title: "Viagens" },
-  { path: "/cargas",        title: "Cargas" },
-  { path: "/monitoramento", title: "Monitoramento" },
-  { path: "/alertas",       title: "Central de Alertas" },
-  { path: "/chicosense-ia", title: "ChicoSense IA" },
-  { path: "/historico",     title: "Histórico de viagens" },
-  { path: "/configuracoes", title: "Configurações" },
 ];
 
 function InitialPage({ title }) {
@@ -38,6 +38,46 @@ export default function AppRoutes({ user, profile }) {
         path="/dashboard"
         element={<Dashboard user={user} profile={profile} />}
       />
+
+      <Route
+        path="/viagens"
+        element={<Viagens />}
+      />
+
+      <Route
+        path="/cargas"
+        element={<Cargas />}
+      />
+
+      <Route
+      path="/monitoramento"
+      element={<Monitoramento />}
+    />
+
+    <Route
+      path="/alertas"
+      element={<Alertas />}
+    />
+
+    <Route
+     path="/historico"
+      element={<Historico />}
+    />
+
+    <Route
+      path="/chicosense-ia"
+      element={<ChicoSenseIA />}
+    />
+
+    <Route
+      path="/configuracoes"
+      element={
+        <Configuracoes
+      user={user}
+      profile={profile}
+      />
+  }
+/>
 
       {pages.map(({ path, title }) => (
         <Route
