@@ -1,5 +1,70 @@
 # Integração frontend–backend: autenticação e sessão
 
+## Incremento 3 — administração — 24/11/2026
+
+Na branch `feature-integracao-operacional-backend`, a rota `/administracao` e o
+menu Administração são exclusivos de ADMIN ativo. As telas de empresas,
+usuários e produtos permitem listar com paginação, cadastrar, editar e
+ativar/inativar. Perfis de usuário são consultados em `/api/v1/perfis`;
+seus UUIDs não são fixados no frontend. ADMIN continua sujeito às validações e
+constraints do servidor; não há conexão direta com o banco na interface.
+
+Empresas usam os tipos TRANSPORTADORA/PRODUTOR/CLIENTE. Alterar um tipo pode ser
+recusado pela API quando houver relações logísticas incompatíveis. Não há
+exclusão de empresa, usuário ou produto pela interface.
+
+Usuários usam nome, e-mail, perfil e senha inicial de 12–128 caracteres.
+Na edição, nova senha vazia é omitida do PATCH e mantém a credencial existente.
+Senhas não são aparadas, registradas em logs ou gravadas em storage; o campo é
+limpo após falha e descartado ao concluir/cancelar o formulário. Nenhuma senha
+ou hash existente é lido para edição. Quando o usuário editado é o próprio
+administrador logado, o App revalida `/auth/me` pelo JWT atual. O evento local
+`auth:refresh` só solicita revalidação; não recebe identidade/permissão por evento
+nem concede privilégios. Alterar o papel da própria conta remove as opções
+administrativas após a nova resposta do servidor.
+
+Em Empresas → Vínculos, é possível listar os usuários com vínculo ativo e
+selecionar um usuário de uma página do catálogo para vincular/reativar. O POST
+usa empresa/usuário no caminho, e o backend valida a operação administrativa.
+Criar um usuário não o vincula automaticamente a uma empresa. A API atual não
+oferece remoção/desativação individual do vínculo: a UI não simula essa operação
+por meio de exclusão, alteração de papel ou inativação de outro recurso.
+
+Em Produtos → Parâmetros, é possível listar, criar e editar parâmetros daquele
+produto. Campos Decimal seguem como strings no JSON, até oito dígitos inteiros
+e quatro casas decimais; vírgula decimal é aceita no formulário. Comparações
+mínimo/máximo usam inteiros escalados (BigInt), sem conversão por Number.
+Ausência é null e zero explícito é preservado. Não há campo ativo nem rota de
+inativação de parâmetro. Esses parâmetros do catálogo não modificam taxas de
+etileno, regras científicas ou configurações ambientais de sessões.
+
+Listas e seletores de usuários para vínculo usam páginas de 20 com um registro
+adicional para determinar a próxima página. Mudança de seção, registro pai ou
+página descarta formulários/detalhes do contexto anterior e cancela consultas
+pendentes. Durante uma gravação, a mudança de contexto e o duplo envio ficam
+bloqueados. Falhas 401/403/404/409/422 não viram sucesso ou ausência de dados;
+em timeout não se repete POST automaticamente e a tela orienta consultar a
+listagem antes de reenviar. Senhas não são incluídas em mensagens de erro.
+
+Validação: 114 testes aprovados (78 anteriores + 36 novos), build concluído e
+lint sem erros, com avisos preexistentes/tamanho do bundle. Testes usam HTTP
+simulado e cobrem acesso direto/menu por perfil, empresas dos três tipos,
+cadastro/edição/inativação, perfis, senha opcional e limpeza, precisão Decimal,
+vínculos, paginação, falhas, envio duplo e revalidação da própria conta.
+Não foram criadas contas/cadastros reais, alterado o backend, executadas migrations
+ou realizado deploy/homologação visual em produção neste incremento.
+
+Para homologar após publicação: usar uma conta ADMIN já existente, abrir
+Administração, preparar empresas/produtos/usuários e criar seus vínculos
+explicitamente. A conta Logística/GESTOR continua administrando somente a Frota
+autorizada. Não se criou outra conta ADMIN nem se alteraram credenciais reais.
+
+Pendências atuais: cadastro de cargas/caixas, transições de viagem/carga,
+declaração PUT, operações de sessão/aquisição, avaliações/decisões e intervenção
+virtual. A consulta autorizada de produtores/clientes para o GESTOR e o catálogo
+de sensores continuam exigindo definição de backend. As listas de pendências
+nos incrementos abaixo são registros históricos, não o estado atual.
+
 ## Incremento 2 — frota — 24/11/2026
 
 Na branch `feature-integracao-operacional-backend`, a nova rota `/frota` permite
