@@ -1,5 +1,112 @@
 # Integração frontend–backend: autenticação e sessão
 
+## Incremento 5 — declaração e ciclo de sessões — 24/11/2026
+
+Na branch `feature-integracao-operacional-backend`, o painel Declaração e sessões
+de monitoramento está disponível nos detalhes da carga e na página Monitoramento.
+O caminho Cargas → Ir ao monitoramento mantém a seleção da viagem/carga recebida
+pela navegação. O painel usa apenas rotas existentes; não altera backend,
+entidades, migrations, credenciais, motor científico ou dados reais.
+
+### Declaração
+
+PUT `/api/v1/cargas/{carga_id}/monitoramento`: confirmação explícita de
+MANGA_TOMMY_ATKINS, massa líquida em kg positiva (string Decimal, até oito dígitos
+inteiros e quatro casas decimais), maturação, lote, indicador booleano de lote
+hipotético e rastreabilidade. Vírgula decimal é aceita; vazio/zero/negativo/NaN
+ou excesso de precisão são recusados antes do envio. Não se infere massa a
+partir de quantidade logística, peso ou número de caixas. DESCONHECIDA é
+preservada e não implica maturação conhecida nem taxas validadas para cultivar.
+O usuário deve confirmar produto e natureza hipotética em uma nova declaração.
+
+ADMIN ou GESTOR/OPERADOR da transportadora daquela viagem podem escrever, sujeitos
+ao servidor. CONSULTA e vínculos somente com produtor/cliente ficam em leitura.
+Declaração não é editável pela UI em carga/viagem terminal ou quando a página
+carregada contém sessão ativa. Ausência de sessão ativa na primeira página não
+prova ausência global: o backend continua verificando produto, estado e sessão
+ativa em qualquer página e pode recusar com 409. Versão fica a cargo da API;
+a UI não renumera declarações nem substitui snapshots de sessões anteriores.
+
+### Sessões e sensores
+
+Listagem de sessões por carga, paginada em 20 registros + um de verificação.
+Consulta detalhada por GET `/api/v1/monitoramentos/{sessao_id}` valida carga/viagem
+antes de mostrar o snapshot, a versão declarada na abertura, sensores, ambiente,
+janela, observações e motivo de fim. A declaração atual e o snapshot histórico
+podem diferir e permanecem apresentados separadamente.
+
+Início por POST `/api/v1/cargas/{carga_id}/monitoramentos` exige declaração,
+viagem EM_ANDAMENTO e carga EM_TRANSITO. Início efetivo é informado, convertido
+do horário local para ISO UTC, deve respeitar o início real da viagem e não
+ser futuro. Ambiente é escolhido explicitamente; sensores de temperatura e
+umidade devem ser distintos. Umidade continua opcional conforme o contrato.
+Criar sessão não sincroniza dados ou comanda sensores/hardware.
+
+**Limitação de primeira sessão:** não existe catálogo HTTP de sensores no backend
+atual. O formulário não inventa sensores, endpoints ou IDs e não consulta outra
+carga. Ao abrir o início, consulta explicitamente o histórico da própria carga,
+por páginas de 100 metadados, validando ancestralidade, repetição de páginas e
+snapshots. Permite selecionar somente sensores identificados nesses registros.
+São referências históricas, não prova de estado atual: o backend verifica tipo,
+unidade, estado, contexto e conflitos. Sensores de protótipo não são oferecidos
+para TRANSPORTE_REFRIGERADO. Sessão ativa em qualquer página desse histórico
+impede novo início. A leitura sob demanda de todo esse histórico pode precisar
+de um endpoint específico quando houver muitas sessões por carga.
+
+Sem referências históricas, a primeira sessão fica bloqueada, com explicação.
+É necessário definir e publicar um catálogo/provisionamento autorizado no
+backend para desbloquear esse fluxo. Esta entrega **não conclui** essa pendência,
+não cadastra dispositivos e não pede UUID digitado pelo usuário como atalho.
+
+Encerramento/cancelamento usam POST `/monitoramentos/{id}/encerrar|cancelar`,
+fim efetivo e motivo obrigatório. Fim deve ser posterior ao início, não futuro
+e não posterior à chegada real. Viagem cancelada permite somente CANCELADA.
+Uma sessão ainda ativa pode ser finalizada mesmo com carga/viagem concluída,
+desde que o backend aceite a janela. Sessão terminal não é reaberta nem editada.
+Cancelar preserva registros e histórico; não executa DELETE ou intervenção física.
+
+### Respostas incertas e proteção da interface
+
+Nenhuma gravação é repetida automaticamente. O formulário de início gera uma
+chave UUID apenas para uma nova tentativa. Em timeout/5xx, os campos ficam
+preservados e bloqueados; reenvio manual mantém o mesmo payload e a mesma chave.
+Fechar/reabrir o formulário na mesma carga mantém a tentativa em memória. A
+consulta explícita do histórico identifica uma sessão já criada pela mesma
+chave e autor, permitindo consultar a confirmação sem outro POST.
+
+PUT incerto mantém a mesma declaração para repetição manual. Finalização
+incerta mantém exatamente fim, motivo, sessão e operação (encerrar/cancelar),
+inclusive ao fechar/reabrir o formulário. Outra finalização conflitante fica
+bloqueada até consultar/confirmar a operação. Resposta 4xx definitiva libera
+correção do rascunho; o servidor continua responsável pela decisão final.
+As tentativas ficam em estado React, sem armazenamento persistente; sair do
+contexto/recarregar a página perde esse rascunho, e é necessário consultar o
+histórico antes de tentar uma nova operação. Não se promete idempotência do
+cliente além da sessão de uso; a proteção definitiva pertence ao backend.
+
+Envio duplo e alterações locais de contexto ficam bloqueados durante a gravação.
+Consultas são canceladas ao trocar carga/viagem. Falhas não viram lista vazia,
+produção zero, declaração fictícia ou sessão confirmada. Os componentes de
+logística também respeitam o bloqueio compartilhado de gravações do painel.
+
+### Validação e pendências
+
+192 testes aprovados (153 anteriores + 39 novos); build concluído e lint sem
+erros, mantendo os avisos preexistentes e de tamanho do bundle. Testes usam HTTP
+simulado e cobrem massa/natureza explícita, papéis/ancestralidade, snapshots,
+paginação, leitura do histórico, início/fim, primeira sessão bloqueada, sensores
+de protótipo, conflitos, timeout/reenvio, reconciliação de chave e duplo envio.
+O mock legado de logística ganhou apenas a resposta da nova consulta de sessões;
+nenhuma proteção foi relaxada para manter testes antigos. Não houve escrita no
+Supabase, homologação visual em Vercel, migration, deploy ou alteração científica.
+
+Pendências: catálogo/provisionamento de sensores para primeira sessão; consulta
+comercial de produtores/clientes para GESTOR; sincronização explícita e qualidade
+IoT; avaliações, decisões/evidências e intervenções virtuais. A listagem e os
+indicadores legados de leituras na página Monitoramento ainda usam a primeira
+página de 100 registros e não são corrigidos por este novo painel de ciclo de
+sessões; precisam da revisão de paginação/janela no incremento de aquisição.
+
 ## Incremento 4 — cargas, caixas e estados logísticos — 24/11/2026
 
 Na mesma branch `feature-integracao-operacional-backend`, a página Cargas passa a

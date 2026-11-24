@@ -20,7 +20,7 @@ const fields = {
   ],
 };
 
-export default function LogisticsEditor({ kind, parentId, trip, cargo, record, onBusy, onSaved, onCancel }) {
+export default function LogisticsEditor({ kind, parentId, trip, cargo, record, busy = false, onBusy, onSaved, onCancel }) {
   const [values, setValues] = useState(() => ({ ...Object.fromEntries(fields[kind].map((field) => [field.name, record?.[field.name] ?? ""])),
     observacoes: record?.observacoes ?? "", status: record?.status, produto_id: "", produtor_id: "", cliente_id: "" }));
   const [saving, setSaving] = useState(false);
@@ -33,7 +33,7 @@ export default function LogisticsEditor({ kind, parentId, trip, cargo, record, o
   const change = (field, value) => setValues((old) => ({ ...old, [field]: value }));
   async function submit(event) {
     event.preventDefault();
-    if (pending.current) return;
+    if (pending.current || busy) return;
     let payload;
     try { payload = logisticsPayload(kind, values, record, trip, cargo); }
     catch (failure) { setError(failure.message); return; }
@@ -60,6 +60,6 @@ export default function LogisticsEditor({ kind, parentId, trip, cargo, record, o
     {terminal && <p>Registro encerrado: somente observações podem ser alteradas.</p>}
     <label className="form-field">Observações<textarea className="input" rows={3} disabled={saving} value={values.observacoes} onChange={(event) => change("observacoes", event.target.value)} /></label>
     {error && <p role="alert">{error}</p>}
-    <div className="logistics-actions"><Button type="submit" loading={saving}>Salvar {singular}</Button><Button variant="secondary" disabled={saving} onClick={onCancel}>Cancelar edição</Button></div>
+    <div className="logistics-actions"><Button type="submit" loading={saving} disabled={busy && !saving}>Salvar {singular}</Button><Button variant="secondary" disabled={saving || busy} onClick={onCancel}>Cancelar edição</Button></div>
   </form>;
 }

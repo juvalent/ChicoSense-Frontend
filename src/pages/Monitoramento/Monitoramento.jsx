@@ -1,5 +1,7 @@
 
 import { useEffect, useMemo, useState } from "react";
+import { useLocation } from "react-router-dom";
+import CargoMonitoringPanel from "../../components/Monitoring/CargoMonitoringPanel";
 import {
   Activity,
   CalendarClock,
@@ -115,13 +117,16 @@ function SensorCard({
 }
 
 export default function Monitoramento({
+  user,
   trips = [],
   tripsLoading = false,
   tripsError,
   onRetryTrips,
 }) {
-  const [viagemId, setViagemId] = useState("");
-  const [cargaId, setCargaId] = useState("");
+  const location = useLocation();
+  const [viagemId, setViagemId] = useState(location.state?.tripId || "");
+  const [cargaId, setCargaId] = useState(location.state?.loadId || "");
+  const [lifecycleBusy, setLifecycleBusy] = useState(false);
   const [sessaoId, setSessaoId] = useState("");
 
   const [sessoes, setSessoes] = useState([]);
@@ -140,6 +145,8 @@ export default function Monitoramento({
     error: cargasError,
     retry: retryCargas,
   } = useViagemCargas(viagemId);
+  const selectedMonitorTrip = trips.find((trip) => trip.id === viagemId);
+  const selectedMonitorCargo = loads.find((cargo) => cargo.id === cargaId && cargo.viagem_id === viagemId);
 
   useEffect(() => {
     if (!viagemId || tripsLoading || tripsError) return;
@@ -539,7 +546,7 @@ export default function Monitoramento({
               className="monitoramento-filtros__select"
               value={viagemId}
               onChange={selecionarViagem}
-              disabled={tripsLoading}
+              disabled={tripsLoading || lifecycleBusy}
             >
               <option value="">
                 Selecione uma viagem
@@ -567,7 +574,7 @@ export default function Monitoramento({
               className="monitoramento-filtros__select"
               value={cargaId}
               onChange={selecionarCarga}
-              disabled={!viagemId || cargasLoading}
+              disabled={!viagemId || cargasLoading || lifecycleBusy}
             >
               <option value="">
                 Selecione uma carga
@@ -595,7 +602,7 @@ export default function Monitoramento({
               onChange={(event) =>
                 setSessaoId(event.target.value)
               }
-              disabled={!cargaId || sessoesLoading}
+              disabled={!cargaId || sessoesLoading || lifecycleBusy}
             >
               <option value="">
                 Selecione uma sessão
@@ -619,6 +626,7 @@ export default function Monitoramento({
             className="button button--primary monitoramento-filtros__refresh"
             onClick={atualizar}
             disabled={
+              lifecycleBusy ||
               tripsLoading ||
               cargasLoading ||
               sessoesLoading ||
@@ -631,6 +639,11 @@ export default function Monitoramento({
           </button>
         </div>
       </Card>
+
+      {selectedMonitorTrip && selectedMonitorCargo && !tripsLoading && !tripsError && !cargasLoading && !cargasError && <CargoMonitoringPanel
+        user={user} trip={selectedMonitorTrip} cargo={selectedMonitorCargo} busy={lifecycleBusy} onBusy={setLifecycleBusy}
+        onChanged={() => setRefreshKey((value) => value + 1)}
+      />}
 
       <div className="monitoramento-conteudo">
         {renderConteudo()}

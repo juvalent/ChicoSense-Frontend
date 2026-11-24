@@ -40,6 +40,7 @@ function adapter({ tripData = trip, cargos = [cargo], boxes = [box], companies =
     if (config.url === `/api/v1/viagens/${trip.id}/cargas`) return reply(config, cargos, readStatus);
     if (config.url === `/api/v1/cargas/${cargo.id}/caixas`) return reply(config, boxes, readStatus);
     if (config.url === `/api/v1/cargas/${cargo.id}/monitoramento`) return reply(config, {}, 404);
+    if (config.url === `/api/v1/cargas/${cargo.id}/monitoramentos`) return reply(config, []);
     if (config.url === "/api/v1/produtos") return reply(config, [product]);
     if (config.url === "/api/v1/empresas") return reply(config, companies);
     if (config.url === "/api/v1/viagens") return reply(config, [latestTrip]);

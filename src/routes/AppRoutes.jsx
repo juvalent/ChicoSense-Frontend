@@ -140,6 +140,7 @@ export default function AppRoutes({ user, profile }) {
         path="/monitoramento"
         element={
           <Monitoramento
+            user={user}
             trips={trips}
             tripsLoading={loading}
             tripsError={error}

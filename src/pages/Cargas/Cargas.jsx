@@ -48,7 +48,7 @@ function CargoWorkspace({ id, user, busy, onBusy, initialCargoId, onTripSaved, o
   if (view.loading) return <p role="status">Consultando viagem…</p>;
   if (view.error) return <Card><p role="alert">{view.error}</p><Button onClick={() => setRetry((n) => n + 1)}>Tentar novamente</Button></Card>;
   return <>
-    <TripOperations user={user} trip={view.trip} onBusy={onBusy} onSaved={(trip) => { setView({ trip, loading: false, error: "" }); onTripSaved?.(); }} />
+    <TripOperations user={user} trip={view.trip} busy={busy} onBusy={onBusy} onSaved={(trip) => { setView({ trip, loading: false, error: "" }); onTripSaved?.(); }} />
     <LogisticsRecords kind="cargas" parentId={id} trip={view.trip} user={user} busy={busy} onBusy={onBusy} initialCargoId={initialCargoId} onMonitor={onMonitor} />
   </>;
 }

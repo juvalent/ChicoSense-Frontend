@@ -2,9 +2,8 @@ import { useEffect, useState } from "react";
 import Card from "../UI/Card";
 import Button from "../UI/Button";
 import Input from "../UI/Input";
-import CargoDeclaration from "../Cards/CargoDeclaration";
+import CargoMonitoringPanel from "../Monitoring/CargoMonitoringPanel";
 import LogisticsEditor from "./LogisticsEditor";
-import { obterMonitoramentoCarga } from "../../services/cargaService";
 import { canCreateLogistics, canOperateTrip, LOGISTICS_PAGE_SIZE, logisticsError, readLogistics } from "../../services/logisticsService";
 import "./Logistics.css";
 
@@ -39,7 +38,7 @@ export default function LogisticsRecords({ kind, parentId, trip, cargo, user, bu
   return <Card title={kind === "cargas" ? "Cargas da viagem" : `Caixas de ${cargo.identificacao}`} action={canWrite && canCreateLogistics(kind, trip, cargo) && <Button disabled={busy || page.loading || Boolean(page.error)} onClick={() => edit(null)}>Nova {singular}</Button>}>
     {notice && <p role="status">{notice}</p>}
     {!canWrite && <p>Consulta somente: alterações exigem perfil de operação e vínculo com a transportadora desta viagem.</p>}
-    {editor && canWrite && <LogisticsEditor key={editor.record?.id || "new"} kind={kind} parentId={parentId} trip={trip} cargo={cargo} record={editor.record} onBusy={onBusy} onSaved={saved} onCancel={() => setEditor(null)} />}
+    {editor && canWrite && <LogisticsEditor key={editor.record?.id || "new"} kind={kind} parentId={parentId} trip={trip} cargo={cargo} record={editor.record} busy={busy} onBusy={onBusy} onSaved={saved} onCancel={() => setEditor(null)} />}
     <Input label={`Buscar ${kind} nesta página`} type="search" value={search} disabled={busy || page.loading} onChange={(event) => setSearch(event.target.value)} />
     <div className="logistics-actions"><Button variant="secondary" disabled={busy || page.loading} onClick={() => { setEditor(null); setDetail(null); setRefresh((n) => n + 1); }}>Atualizar {kind}</Button></div>
     {page.loading && <p role="status">Consultando {kind}…</p>}
@@ -64,30 +63,8 @@ export default function LogisticsRecords({ kind, parentId, trip, cargo, user, bu
     </nav>
     {detail && kind === "cargas" && <div className="logistics-detail">
       <Button variant="secondary" disabled={busy} onClick={() => setDetail(null)}>Fechar carga</Button>
-      <CargoInspection key={`declaration:${detail.id}`} cargo={detail} onMonitor={onMonitor} busy={busy} />
+      <CargoMonitoringPanel key={`monitoring:${detail.id}`} cargo={detail} trip={trip} user={user} onMonitor={onMonitor} busy={busy} onBusy={onBusy} />
       <LogisticsRecords key={`boxes:${detail.id}`} kind="caixas" parentId={detail.id} trip={trip} cargo={detail} user={user} busy={busy} onBusy={onBusy} />
     </div>}
-  </Card>;
-}
-
-function CargoInspection({ cargo, onMonitor, busy }) {
-  const [view, setView] = useState({ data: null, loading: true, error: "" });
-  const [refresh, setRefresh] = useState(0);
-  useEffect(() => {
-    const controller = new AbortController();
-    async function load() {
-      setView({ data: null, loading: true, error: "" });
-      try {
-        const data = await obterMonitoramentoCarga(cargo.id, { signal: controller.signal });
-        if (!controller.signal.aborted) setView({ data, loading: false, error: "" });
-      } catch (error) { if (!controller.signal.aborted) setView({ data: null, loading: false, error: logisticsError(error) }); }
-    }
-    load(); return () => controller.abort();
-  }, [cargo.id, refresh]);
-  return <Card title={`Carga ${cargo.identificacao}`}>
-    <p>Caixas declaradas: {cargo.quantidade_caixas ?? "Não informado"}. Origem: {cargo.origem_produto || "Não informada"}.</p>
-    {cargo.observacoes && <p>{cargo.observacoes}</p>}
-    {view.loading ? <p role="status">Consultando declaração de monitoramento…</p> : view.error ? <p role="alert">{view.error}</p> : view.data ? <CargoDeclaration declaration={view.data} /> : <p>Dados de monitoramento ainda não declarados. Ausência de declaração não significa produção zero.</p>}
-    <div className="logistics-actions"><Button variant="secondary" disabled={busy || view.loading} onClick={() => setRefresh((n) => n + 1)}>Atualizar declaração</Button><Button disabled={busy} onClick={() => onMonitor?.(cargo.id)}>Ir ao monitoramento</Button></div>
   </Card>;
 }
