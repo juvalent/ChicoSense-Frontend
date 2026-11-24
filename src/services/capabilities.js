@@ -8,6 +8,7 @@ export function capabilities(user) {
   const operate = admin || (carrier && ["GESTOR", "OPERADOR"].includes(user.perfil));
   return {
     administer: admin,
+    readFleet: admin || (carrier && ["GESTOR", "OPERADOR", "CONSULTA"].includes(user.perfil)),
     manageFleet: admin || (carrier && user.perfil === "GESTOR"),
     operate,
     configureEnvironment: admin || (carrier && user.perfil === "GESTOR"),

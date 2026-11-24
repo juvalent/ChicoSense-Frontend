@@ -13,6 +13,7 @@ import Alertas from "../pages/Alertas/Alertas";
 import Historico from "../pages/Historico/Historico";
 import ChicoSenseIA from "../pages/ChicoSenseIA/ChicoSenseIA";
 import Configuracoes from "../pages/Configuracoes/Configuracoes";
+import Frota from "../pages/Frota/Frota";
 
 import { listarViagens } from "../services/viagemService";
 
@@ -82,6 +83,7 @@ export default function AppRoutes({ user, profile }) {
 
   return (
     <Routes>
+      <Route path="/frota" element={<Frota user={user} />} />
       {/* Rota inicial */}
       <Route
         path="/"

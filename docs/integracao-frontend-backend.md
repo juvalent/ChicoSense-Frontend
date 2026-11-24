@@ -1,5 +1,47 @@
 # Integração frontend–backend: autenticação e sessão
 
+## Incremento 2 — frota — 24/11/2026
+
+Na branch `feature-integracao-operacional-backend`, a nova rota `/frota` permite
+selecionar uma transportadora autorizada e gerenciar veículos e motoristas:
+
+- ADMIN ou GESTOR vinculado à transportadora ativa: cadastrar, editar e
+  ativar/inativar. Não há exclusão nem transferência de empresa em PATCH.
+- OPERADOR/CONSULTA com vínculo ativo à transportadora: consultar, sem formulários
+  de escrita. Produtor/cliente sem vínculo com transportadora não recebem o menu
+  e não consultam a API ao tentar abrir a página diretamente.
+- O catálogo de empresas é paginado e filtrado por tipo TRANSPORTADORA. A API
+  continua sendo a autoridade de escopo. IDs enviados não substituem autorização.
+- Listagens de frota usam filtro empresa_id e páginas de 20 com um registro de
+  verificação da próxima página, incluindo registros ativos/inativos. Documento
+  de motorista fica no formulário autorizado de edição, sem impressão em logs.
+- Payloads usam somente os campos dos contratos existentes; opcionais vazios
+  tornam-se null. PATCH não inclui empresa_id. Nenhuma alteração de backend,
+  schema, credencial, migration ou regra científica foi necessária.
+- Erros 401/403/404/409/422 não viram sucesso/lista vazia. A gravação aguarda
+  confirmação do servidor; duplo envio é bloqueado, assim como a troca de empresa
+  durante o envio. Não há repetição automática de POST/PATCH em timeout. Nesse
+  caso a tela orienta conferir a listagem antes de reenviar: o backend não oferece
+  chave idempotente nesses cadastros e pode ter concluído a operação.
+- Trocar empresa ou tipo de cadastro elimina o formulário e as linhas anteriores,
+  cancelando consultas pendentes. Respostas de empresa diferente são rejeitadas.
+- Inativar preserva o histórico; as consultas já existentes no formulário Nova
+  viagem filtram ativo=true para veículos/motoristas.
+
+Para testar: entrar com Logística/GESTOR, abrir Frota, selecionar a transportadora
+DEMO, cadastrar um veículo e um motorista. Depois abrir Viagens → Nova viagem e
+selecionar a mesma transportadora; o formulário consulta novamente suas opções.
+Não realizar esse roteiro no banco de produção sem intenção de criar registros.
+
+Validação local: 78 testes aprovados (55 anteriores + 23 deste incremento),
+build concluído e lint sem erros; permanecem avisos preexistentes e de tamanho do
+bundle. Os testes usam HTTP simulado, inclusive para permissões, escopo, edição,
+inativação, paginação e falhas. Não se realizou cadastro real nem homologação
+visual em Vercel nesta etapa. O código abaixo desta seção documenta incrementos
+anteriores; sua lista de pendências é histórica. Permanecem pendentes a
+administração de empresas/usuários/produtos, cargas/caixas, transições logísticas,
+sessões operacionais, avaliações/decisões e intervenções.
+
 ## Incremento operacional inicial — 24/11/2026
 
 Branch local `feature/integracao-operacional-backend`, baseada na main remota

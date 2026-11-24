@@ -1,0 +1,10 @@
+.fleet-page { display: grid; gap: 20px; }
+.fleet-controls { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.fleet-controls > * { min-width: 0; }
+.fleet-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-block: 16px; }
+.fleet-form { padding-block: 16px; border-block: 1px solid var(--color-border); margin-block: 16px; }
+.fleet-table { overflow-x: auto; }
+.fleet-table table { width: 100%; border-collapse: collapse; }
+.fleet-table caption { text-align: left; padding-block: 12px; }
+.fleet-table th, .fleet-table td { text-align: left; padding: 12px; border-bottom: 1px solid var(--color-border); overflow-wrap: anywhere; }
+@media (max-width: 700px) { .fleet-controls { grid-template-columns: minmax(0, 1fr); } }

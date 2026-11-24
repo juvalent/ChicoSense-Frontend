@@ -12,13 +12,16 @@ import {
   Activity,
   FlaskConical,
   X,
+  Truck,
 } from "lucide-react";
 
 import logo from "../../assets/logo-cchicosense-250x80.png";
+import { capabilities } from "../../services/capabilities";
 
 const menuItems = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/viagens", label: "Viagens", icon: Route },
+  { to: "/frota", label: "Frota", icon: Truck },
   { to: "/cargas", label: "Cargas", icon: Boxes },
   { to: "/monitoramento", label: "Monitoramento", icon: Activity },
   { to: "/etileno", label: "Análises de Etileno", icon: FlaskConical },
@@ -98,7 +101,7 @@ export default function Sidebar({
           <p className="sidebar__section-label">Workspace</p>
 
           <ul className="sidebar__list">
-            {menuItems.map(({ to, label, icon: Icon }) => (
+            {menuItems.filter((item) => item.to !== "/frota" || capabilities(user).readFleet).map(({ to, label, icon: Icon }) => (
               <li key={to}>
                 <NavLink
                   to={to}
