@@ -63,6 +63,8 @@ function adapter({ configured = declaration, sessions = [session], writeStatus =
       return reply(config, found || {}, found ? readStatus : 404);
     }
     if (config.url === `/api/v1/viagens/${trip.id}/cargas`) return reply(config, [cargo]);
+    if (config.url === `/api/v1/viagens/${trip.id}`) return reply(config, trip);
+    if (config.url === `/api/v1/cargas/${cargo.id}`) return reply(config, cargo);
     return reply(config, { detail: "Unhandled local mock" }, 404);
   };
   return { calls, history };

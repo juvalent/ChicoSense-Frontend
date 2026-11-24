@@ -5,6 +5,7 @@ import CargoDeclaration from "../Cards/CargoDeclaration";
 import DeclarationEditor from "./DeclarationEditor";
 import StartSessionForm from "./StartSessionForm";
 import EndSessionForm from "./EndSessionForm";
+import AcquisitionPanel from "./AcquisitionPanel";
 import { obterMonitoramentoCarga } from "../../services/cargaService";
 import { canOperateTrip } from "../../services/logisticsService";
 import { lifecycleError, normalizedCargo, normalizedTrip, readSession, readSessionPage, SESSION_PAGE_SIZE } from "../../services/monitoringLifecycleService";
@@ -114,6 +115,7 @@ function MonitoringWorkspace({ user, cargo: sourceCargo, trip: sourceTrip, busy 
           <Button disabled={busy || trip.status === "CANCELADA" || (pendingEnd && pendingEnd !== "ENCERRADA")} onClick={() => end("ENCERRADA")}>Encerrar sessão</Button>
           <Button variant="secondary" disabled={busy || (pendingEnd && pendingEnd !== "CANCELADA")} onClick={() => end("CANCELADA")}>Cancelar sessão</Button>
         </div>}
+        <AcquisitionPanel key={detail.data.id} session={detail.data} trip={trip} user={user} busy={busy} onBusy={onBusy} />
       </>}
     </Card>}
     {form?.kind === "end" && canWrite && <EndSessionForm key={`${form.session.id}:${form.action}`} session={form.session} trip={trip} action={form.action}

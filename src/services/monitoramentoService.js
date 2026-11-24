@@ -194,11 +194,12 @@ export async function listarSincronizacoes(sessaoId, params = {}) {
 }
 
 // Consulta qualidade das leituras
-export async function obterQualidadeSessao(sessaoId) {
+export async function obterQualidadeSessao(sessaoId, params = {}, config = {}) {
   validarId(sessaoId, "Informe a sessão.");
 
   const { data } = await api.get(
-    `${BASE_URL}/monitoramentos/${sessaoId}/qualidade`
+    `${BASE_URL}/monitoramentos/${sessaoId}/qualidade`,
+    { ...config, params }
   );
 
   return data;

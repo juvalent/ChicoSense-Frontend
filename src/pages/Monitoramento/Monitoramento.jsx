@@ -1,653 +1,76 @@
-
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import CargoMonitoringPanel from "../../components/Monitoring/CargoMonitoringPanel";
-import {
-  Activity,
-  CalendarClock,
-  Droplets,
-  RefreshCw,
-  Thermometer,
-  Truck,
-  Package,
-} from "lucide-react";
-
+import api from "../../services/api";
+import { readLogistics, readTrip, LOGISTICS_PAGE_SIZE, logisticsError } from "../../services/logisticsService";
 import Card from "../../components/UI/Card";
-import EmptyState from "../../components/UI/EmptyState";
-import ErrorState from "../../components/UI/ErrorState";
-import LoadingState from "../../components/UI/LoadingState";
+import Select from "../../components/UI/Select";
+import Button from "../../components/UI/Button";
+import CargoMonitoringPanel from "../../components/Monitoring/CargoMonitoringPanel";
 
-import useViagemCargas from "../../hooks/useViagemCargas";
-
-import {
-  listarSessoesCarga,
-  listarLeiturasSessao,
-  normalizarLeituras,
-} from "../../services/monitoramentoService";
-
-function getErrorMessage(error) {
-  const status = error?.response?.status;
-
-  if (status === 401) {
-    return "Sua sessão expirou. Faça login novamente.";
-  }
-
-  if (status === 403) {
-    return "Você não tem permissão para consultar este monitoramento.";
-  }
-
-  if (status === 404) {
-    return "Monitoramento não encontrado.";
-  }
-
-  const detail = error?.response?.data?.detail;
-
-  if (typeof detail === "string") return detail;
-
-  return (
-    error?.message ||
-    "Não foi possível carregar o monitoramento."
-  );
-}
-
-function formatValue(value, unit = "") {
-  if (!Number.isFinite(value)) return "—";
-
-  return `${value.toLocaleString("pt-BR", {
-    maximumFractionDigits: 2,
-  })}${unit}`;
-}
-
-function formatDate(value) {
-  if (!value) return "—";
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) return "—";
-
-  return date.toLocaleString("pt-BR");
-}
-
-function SensorCard({
-  title,
-  icon: Icon,
-  value,
-  unit,
-  sensorId,
-  timestamp,
-  description,
-}) {
-  return (
-    <Card>
-      <div className="monitoramento-metrica">
-        <div className="monitoramento-metrica__header">
-          <div className="monitoramento-metrica__icon">
-            <Icon size={20} />
-          </div>
-
-          <h2 className="monitoramento-metrica__title">
-            {title}
-          </h2>
-        </div>
-
-        <p className="monitoramento-metrica__value">
-          {formatValue(value, unit)}
-        </p>
-
-        <p className="monitoramento-metrica__description">
-          {description}
-        </p>
-
-        <div className="monitoramento-metrica__details">
-          <div className="monitoramento-metrica__detail">
-            <span>Sensor</span>
-            <strong title={sensorId || ""}>
-              {sensorId || "Não identificado"}
-            </strong>
-          </div>
-
-          <div className="monitoramento-metrica__detail">
-            <span>Última medição</span>
-            <strong>{formatDate(timestamp)}</strong>
-          </div>
-        </div>
-      </div>
-    </Card>
-  );
-}
-
-export default function Monitoramento({
-  user,
-  trips = [],
-  tripsLoading = false,
-  tripsError,
-  onRetryTrips,
-}) {
+export default function Monitoramento({ user, trips = [], tripsLoading, tripsError, onRetryTrips }) {
   const location = useLocation();
-  const [viagemId, setViagemId] = useState(location.state?.tripId || "");
-  const [cargaId, setCargaId] = useState(location.state?.loadId || "");
-  const [lifecycleBusy, setLifecycleBusy] = useState(false);
-  const [sessaoId, setSessaoId] = useState("");
+  const [tripId, setTripId] = useState(location.state?.tripId || "");
+  const [busy, setBusy] = useState(false);
+  const trip = trips.find((item) => item.id === tripId);
+  return <div className="logistics-page">
+    <h1 className="page-title">Monitoramento</h1>
+    <p>Declaração, sessões, aquisição e qualidade de temperatura/umidade. Produção potencial de etileno é consultada separadamente em Análises de Etileno.</p>
+    <Card title="Selecione a viagem">
+      <Select label="Viagem do monitoramento" value={trip?.id || ""} disabled={busy || tripsLoading || Boolean(tripsError)} options={[{ value: "", label: "Selecione uma viagem" }, ...trips.map((item) => ({ value: item.id, label: `${item.code || item.id} · ${item.origin || ""} → ${item.destination || ""}` }))]} onChange={(event) => setTripId(event.target.value)} />
+      {tripsLoading && <p role="status">Carregando viagens…</p>}
+      {tripsError && <p role="alert">{tripsError}</p>}
+      {!tripsLoading && !tripsError && !trips.length && <p>Nenhuma viagem disponível para este usuário.</p>}
+      <Button variant="secondary" disabled={busy || tripsLoading} onClick={onRetryTrips}>Atualizar viagens</Button>
+    </Card>
+    {trip && !tripsLoading && !tripsError && <CargoSelection key={trip.id} id={trip.id} user={user} busy={busy} onBusy={setBusy} initialId={location.state?.tripId === trip.id ? location.state?.loadId : undefined} />}
+  </div>;
+}
 
-  const [sessoes, setSessoes] = useState([]);
-  const [sessoesLoading, setSessoesLoading] = useState(false);
-  const [sessoesError, setSessoesError] = useState("");
-
-  const [historico, setHistorico] = useState(null);
-  const [historicoLoading, setHistoricoLoading] = useState(false);
-  const [historicoError, setHistoricoError] = useState("");
-
-  const [refreshKey, setRefreshKey] = useState(0);
-
-  const {
-    loads,
-    loading: cargasLoading,
-    error: cargasError,
-    retry: retryCargas,
-  } = useViagemCargas(viagemId);
-  const selectedMonitorTrip = trips.find((trip) => trip.id === viagemId);
-  const selectedMonitorCargo = loads.find((cargo) => cargo.id === cargaId && cargo.viagem_id === viagemId);
-
+function CargoSelection({ id, user, busy, onBusy, initialId }) {
+  const [offset, setOffset] = useState(0), [refresh, setRefresh] = useState(0), [cargoId, setCargoId] = useState(initialId || "");
+  const [view, setView] = useState({ trip: null, records: [], hasNext: false, loading: true, error: "" });
+  const [selected, setSelected] = useState({ data: null, loading: false, error: "" });
   useEffect(() => {
-    if (!viagemId || tripsLoading || tripsError) return;
-
-    const existe = trips.some(
-      (trip) => String(trip.id) === viagemId
-    );
-
-    if (!existe) {
-      setViagemId("");
-      setCargaId("");
-      setSessaoId("");
+    const controller = new AbortController();
+    async function load() {
+      setView({ trip: null, records: [], hasNext: false, loading: true, error: "" });
+      try {
+        const [trip, page] = await Promise.all([readTrip(id, controller.signal), readLogistics("cargas", id, { offset, signal: controller.signal })]);
+        if (!controller.signal.aborted) setView({ trip, ...page, loading: false, error: "" });
+      } catch (error) { if (!controller.signal.aborted) setView({ trip: null, records: [], hasNext: false, loading: false, error: logisticsError(error) }); }
     }
-  }, [trips, viagemId, tripsLoading, tripsError]);
-
+    load(); return () => controller.abort();
+  }, [id, offset, refresh]);
   useEffect(() => {
-    let active = true;
-
-    setSessoes([]);
-    setSessaoId("");
-    setSessoesError("");
-
-    if (!cargaId) {
-      setSessoesLoading(false);
-      return;
+    if (!cargoId) return;
+    const controller = new AbortController();
+    async function load() {
+      setSelected({ data: null, loading: true, error: "" });
+      try {
+        const { data } = await api.get(`/api/v1/cargas/${encodeURIComponent(cargoId)}`, { signal: controller.signal });
+        if (data?.id !== cargoId || data.viagem_id !== id) throw new Error("Carga incompatível com a viagem selecionada.");
+        if (!controller.signal.aborted) setSelected({ data, loading: false, error: "" });
+      } catch (error) { if (!controller.signal.aborted) setSelected({ data: null, loading: false, error: logisticsError(error) }); }
     }
-
-    setSessoesLoading(true);
-
-    listarSessoesCarga(cargaId)
-      .then((data) => {
-        if (active) {
-          setSessoes(Array.isArray(data) ? data : []);
-        }
-      })
-      .catch((error) => {
-        if (active) {
-          setSessoesError(getErrorMessage(error));
-        }
-      })
-      .finally(() => {
-        if (active) setSessoesLoading(false);
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [cargaId, refreshKey]);
-
-  useEffect(() => {
-    let active = true;
-
-    setHistorico(null);
-    setHistoricoError("");
-
-    if (!sessaoId) {
-      setHistoricoLoading(false);
-      return;
-    }
-
-    setHistoricoLoading(true);
-
-    listarLeiturasSessao(sessaoId, {
-      limit: 100,
-      offset: 0,
-    })
-      .then((data) => {
-        if (active) setHistorico(data);
-      })
-      .catch((error) => {
-        if (active) {
-          setHistoricoError(getErrorMessage(error));
-        }
-      })
-      .finally(() => {
-        if (active) setHistoricoLoading(false);
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [sessaoId, refreshKey]);
-
-  const leituras = useMemo(
-    () => normalizarLeituras(historico?.leituras ?? []),
-    [historico]
-  );
-
-  const ultimaTemperatura = useMemo(
-    () =>
-      [...leituras]
-        .reverse()
-        .find((item) => item.tipo === "TEMPERATURA"),
-    [leituras]
-  );
-
-  const ultimaUmidade = useMemo(
-    () =>
-      [...leituras]
-        .reverse()
-        .find((item) => item.tipo === "UMIDADE"),
-    [leituras]
-  );
-
-  const sessaoSelecionada = sessoes.find(
-    (sessao) => String(sessao.id) === sessaoId
-  );
-
-  function selecionarViagem(event) {
-    setViagemId(event.target.value);
-    setCargaId("");
-    setSessaoId("");
-  }
-
-  function selecionarCarga(event) {
-    setCargaId(event.target.value);
-    setSessaoId("");
-  }
-
-  function atualizar() {
-    if (!viagemId) {
-      onRetryTrips?.();
-      return;
-    }
-
-    if (!cargaId) {
-      retryCargas();
-      return;
-    }
-
-    setRefreshKey((value) => value + 1);
-  }
-
-  function renderConteudo() {
-    if (tripsLoading) {
-      return (
-        <Card>
-          <LoadingState message="Carregando viagens..." />
-        </Card>
-      );
-    }
-
-    if (tripsError) {
-      return (
-        <Card>
-          <ErrorState
-            message={tripsError}
-            onRetry={onRetryTrips}
-          />
-        </Card>
-      );
-    }
-
-    if (!trips.length) {
-      return (
-        <Card>
-          <EmptyState
-            title="Nenhuma viagem disponível"
-            description="Nenhuma viagem foi retornada pela API para este usuário."
-          />
-        </Card>
-      );
-    }
-
-    if (!viagemId) {
-      return (
-        <Card>
-          <EmptyState
-            title="Selecione uma viagem"
-            description="Escolha uma viagem para consultar as cargas e os sensores."
-          />
-        </Card>
-      );
-    }
-
-    if (cargasLoading) {
-      return (
-        <Card>
-          <LoadingState message="Carregando cargas..." />
-        </Card>
-      );
-    }
-
-    if (cargasError) {
-      return (
-        <Card>
-          <ErrorState
-            message={cargasError}
-            onRetry={retryCargas}
-          />
-        </Card>
-      );
-    }
-
-    if (!loads.length) {
-      return (
-        <Card>
-          <EmptyState
-            title="Nenhuma carga disponível"
-            description="Esta viagem ainda não possui cargas cadastradas."
-          />
-        </Card>
-      );
-    }
-
-    if (!cargaId) {
-      return (
-        <Card>
-          <EmptyState
-            title="Selecione uma carga"
-            description="Escolha a carga que deseja monitorar."
-          />
-        </Card>
-      );
-    }
-
-    if (sessoesLoading) {
-      return (
-        <Card>
-          <LoadingState message="Carregando sessões..." />
-        </Card>
-      );
-    }
-
-    if (sessoesError) {
-      return (
-        <Card>
-          <ErrorState
-            message={sessoesError}
-            onRetry={atualizar}
-          />
-        </Card>
-      );
-    }
-
-    if (!sessoes.length) {
-      return (
-        <Card>
-          <EmptyState
-            title="Nenhuma sessão disponível"
-            description="Esta carga ainda não possui sessões de monitoramento."
-          />
-        </Card>
-      );
-    }
-
-    if (!sessaoId) {
-      return (
-        <Card>
-          <EmptyState
-            title="Selecione uma sessão"
-            description="Escolha uma sessão para consultar o histórico IoT."
-          />
-        </Card>
-      );
-    }
-
-    if (historicoLoading) {
-      return (
-        <Card>
-          <LoadingState message="Carregando leituras..." />
-        </Card>
-      );
-    }
-
-    if (historicoError) {
-      return (
-        <Card>
-          <ErrorState
-            message={historicoError}
-            onRetry={atualizar}
-          />
-        </Card>
-      );
-    }
-
-    if (!leituras.length) {
-      return (
-        <Card>
-          <EmptyState
-            title="Nenhuma leitura disponível"
-            description="Não foram encontradas medições utilizáveis nesta consulta."
-          />
-        </Card>
-      );
-    }
-
-    return (
-      <>
-        <div className="monitoramento-page__comparisons">
-          <SensorCard
-            title="Temperatura"
-            icon={Thermometer}
-            value={ultimaTemperatura?.valor}
-            unit={ultimaTemperatura?.unidade || " °C"}
-            sensorId={ultimaTemperatura?.sensorId}
-            timestamp={ultimaTemperatura?.timestamp}
-            description="Última temperatura registrada na sessão."
-          />
-
-          <SensorCard
-            title="Umidade"
-            icon={Droplets}
-            value={ultimaUmidade?.valor}
-            unit={ultimaUmidade?.unidade || "%"}
-            sensorId={ultimaUmidade?.sensorId}
-            timestamp={ultimaUmidade?.timestamp}
-            description="Última umidade registrada na sessão."
-          />
-        </div>
-
-        <Card>
-          <div className="monitoramento-sessao">
-            <div className="monitoramento-sessao__heading">
-              <div className="monitoramento-sessao__icon">
-                <Activity size={20} />
-              </div>
-
-              <div>
-                <h2>Informações da sessão</h2>
-                <p>
-                  Dados do monitoramento selecionado
-                </p>
-              </div>
-            </div>
-
-            <div className="monitoramento-sessao__grid">
-              <div className="monitoramento-sessao__item">
-                <span>Produto</span>
-                <strong>
-                  {sessaoSelecionada?.produto_identificado ||
-                    "Não informado"}
-                </strong>
-              </div>
-
-              <div className="monitoramento-sessao__item">
-                <span>Estado</span>
-                <strong>
-                  {sessaoSelecionada?.estado ||
-                    "Não informado"}
-                </strong>
-              </div>
-
-              <div className="monitoramento-sessao__item">
-                <span>Início</span>
-                <strong>
-                  {formatDate(sessaoSelecionada?.inicio)}
-                </strong>
-              </div>
-
-              <div className="monitoramento-sessao__item">
-                <span>Leituras consultadas</span>
-                <strong>{leituras.length}</strong>
-              </div>
-            </div>
-          </div>
-        </Card>
-
-        <p className="monitoramento-page__note">
-          As medições são provenientes do histórico IoT da
-          sessão. A comparação Ambiente × Produto depende
-          da identificação dos sensores em cada contexto.
-          A validade operacional das leituras ainda precisa
-          ser confirmada.
-        </p>
-      </>
-    );
-  }
-
-  return (
-    <div className="monitoramento-page">
-      <div className="monitoramento-page__heading">
-        <span className="monitoramento-page__eyebrow">
-          Telemetria IoT
-        </span>
-
-        <h1 className="page-title">
-          Ambiente × Produto
-        </h1>
-
-        <p className="monitoramento-page__description">
-          Acompanhe as condições registradas pelos sensores
-          durante o transporte das cargas.
-        </p>
-      </div>
-
-      <Card>
-        <div className="monitoramento-filtros">
-          <div className="monitoramento-filtros__campo">
-            <label htmlFor="monitoramento-viagem">
-              <Truck size={16} />
-              Viagem
-            </label>
-
-            <select
-              id="monitoramento-viagem"
-              className="monitoramento-filtros__select"
-              value={viagemId}
-              onChange={selecionarViagem}
-              disabled={tripsLoading || lifecycleBusy}
-            >
-              <option value="">
-                Selecione uma viagem
-              </option>
-
-              {trips.map((trip) => (
-                <option key={trip.id} value={trip.id}>
-                  {trip.code || "Viagem"} —{" "}
-                  {trip.origin || "Origem não informada"}
-                  {" → "}
-                  {trip.destination || "Destino não informado"}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="monitoramento-filtros__campo">
-            <label htmlFor="monitoramento-carga">
-              <Package size={16} />
-              Carga
-            </label>
-
-            <select
-              id="monitoramento-carga"
-              className="monitoramento-filtros__select"
-              value={cargaId}
-              onChange={selecionarCarga}
-              disabled={!viagemId || cargasLoading || lifecycleBusy}
-            >
-              <option value="">
-                Selecione uma carga
-              </option>
-
-              {loads.map((load) => (
-                <option key={load.id} value={load.id}>
-                  {load.code || "Carga"} —{" "}
-                  {load.variety || "Produto não informado"}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="monitoramento-filtros__campo">
-            <label htmlFor="monitoramento-sessao">
-              <CalendarClock size={16} />
-              Sessão
-            </label>
-
-            <select
-              id="monitoramento-sessao"
-              className="monitoramento-filtros__select"
-              value={sessaoId}
-              onChange={(event) =>
-                setSessaoId(event.target.value)
-              }
-              disabled={!cargaId || sessoesLoading || lifecycleBusy}
-            >
-              <option value="">
-                Selecione uma sessão
-              </option>
-
-              {sessoes.map((sessao) => (
-                <option key={sessao.id} value={sessao.id}>
-                  {sessao.produto_identificado ||
-                    "Monitoramento"}
-                  {" — "}
-                  {sessao.estado || "Sem estado"}
-                  {" — "}
-                  {formatDate(sessao.inicio)}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <button
-            type="button"
-            className="button button--primary monitoramento-filtros__refresh"
-            onClick={atualizar}
-            disabled={
-              lifecycleBusy ||
-              tripsLoading ||
-              cargasLoading ||
-              sessoesLoading ||
-              historicoLoading
-            }
-            title="Atualizar monitoramento"
-          >
-            <RefreshCw size={17} />
-            Atualizar
-          </button>
-        </div>
-      </Card>
-
-      {selectedMonitorTrip && selectedMonitorCargo && !tripsLoading && !tripsError && !cargasLoading && !cargasError && <CargoMonitoringPanel
-        user={user} trip={selectedMonitorTrip} cargo={selectedMonitorCargo} busy={lifecycleBusy} onBusy={setLifecycleBusy}
-        onChanged={() => setRefreshKey((value) => value + 1)}
-      />}
-
-      <div className="monitoramento-conteudo">
-        {renderConteudo()}
-      </div>
-    </div>
-  );
+    load(); return () => controller.abort();
+  }, [cargoId, id, refresh]);
+  const options = [...view.records];
+  if (selected.data && !options.some((cargo) => cargo.id === selected.data.id)) options.push(selected.data);
+  return <>
+    <Card title="Carga do monitoramento">
+      <Select label="Carga do monitoramento" value={cargoId} disabled={busy || view.loading || Boolean(view.error)} options={[{ value: "", label: "Selecione uma carga" }, ...options.map((cargo) => ({ value: cargo.id, label: cargo.identificacao }))]} onChange={(event) => { setSelected({ data: null, loading: false, error: "" }); setCargoId(event.target.value); }} />
+      {view.loading && <p role="status">Consultando cargas autorizadas…</p>}
+      {view.error && <p role="alert">{view.error}</p>}
+      {!view.loading && !view.error && !view.records.length && <p>Nenhuma carga nesta página.</p>}
+      <nav className="logistics-actions" aria-label="Paginação de cargas no monitoramento">
+        <Button variant="secondary" disabled={busy || view.loading || offset === 0} onClick={() => { setCargoId(""); setSelected({ data: null, loading: false, error: "" }); setOffset((n) => Math.max(0, n - LOGISTICS_PAGE_SIZE)); }}>Cargas anteriores</Button>
+        <span>Página {offset / LOGISTICS_PAGE_SIZE + 1}</span>
+        <Button variant="secondary" disabled={busy || view.loading || !view.hasNext} onClick={() => { setCargoId(""); setSelected({ data: null, loading: false, error: "" }); setOffset((n) => n + LOGISTICS_PAGE_SIZE); }}>Próximas cargas</Button>
+        <Button variant="secondary" disabled={busy || view.loading} onClick={() => setRefresh((n) => n + 1)}>Atualizar cargas do monitoramento</Button>
+      </nav>
+    </Card>
+    {cargoId && selected.loading && <p role="status">Consultando a carga…</p>}
+    {cargoId && selected.error && <p role="alert">{selected.error}</p>}
+    {cargoId && selected.data && view.trip && !view.loading && !view.error && !selected.loading && <CargoMonitoringPanel key={selected.data.id} user={user} trip={view.trip} cargo={selected.data} busy={busy} onBusy={onBusy} />}
+  </>;
 }

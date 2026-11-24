@@ -1,5 +1,131 @@
 # Integração frontend–backend: autenticação e sessão
 
+## Incremento 6 — aquisição, revisões e qualidade IoT — 24/11/2026
+
+Entrega somente no frontend, conforme orientação de adiar mudanças de backend.
+Na consulta de uma sessão, Abrir aquisição e qualidade carrega as tentativas,
+leituras e controles operacionais. O painel funciona nas páginas Cargas e
+Monitoramento. Abrir/consultar não inicia coleta. O backend, as credenciais,
+o banco real e o motor de etileno não foram modificados.
+
+### Sincronização explícita
+
+POST `/api/v1/monitoramentos/{sessao_id}/sincronizacoes`, com origem BANCO ou
+THINGSPEAK escolhida pelo usuário, início/fim explícitos dentro da sessão,
+limite de requisições inteiro entre 1 e 32 (padrão operacional da API: 16),
+limite de atraso opcional positivo em segundos e chave idempotente UUID.
+Nenhuma API key/canal/token é solicitado no formulário. BANCO reassocia apenas
+medições externas de fontes vinculadas, não fabrica leituras nem descobre novos
+dispositivos. THINGSPEAK usa a configuração privada já existente do backend.
+
+ADMIN/GESTOR/OPERADOR da transportadora podem sincronizar sessão ATIVA.
+Complementação de ENCERRADA exige ADMIN/GESTOR, confirmação explícita e
+justificativa. CANCELADA permite leitura, sem incorporação. CONSULTA e vínculos
+somente com produtor/cliente não recebem escrita. O backend valida tudo de novo.
+Se outra execução estiver registrada, a UI informa o fato e o servidor decide
+se a nova solicitação é conflitante ou se pode substituir uma execução expirada;
+o browser não expira leases nem inventa regras de concorrência.
+
+HTTP 202/EM_EXECUCAO mantém a solicitação pendente e nunca anuncia coleta
+concluída. CONCLUIDA, PARCIAL, FALHA e INTERROMPIDA são mostrados como estados da
+tentativa auditada, com contadores retornados; ausência de contador não vira
+zero. Não se equipara estado HTTP/execução a qualidade científica ou risco.
+
+Duplo envio é bloqueado. Não há reenvio, polling ou sincronização automáticos.
+Em timeout/5xx ou execução pendente, o conteúdo/chave ficam preservados e os
+campos bloqueados; reconsultar manualmente envia o mesmo payload/chave. Fechar
+e reabrir o formulário na mesma sessão mantém a tentativa em memória. Consultar
+tentativas permite reconhecer chave/autor já registrados sem outro POST. Sair
+da sessão/página perde o rascunho local: antes de nova solicitação, consultar o
+histórico. Não se armazenam credenciais ou esses rascunhos no storage.
+
+### Leituras, janela e revisão
+
+GET sincronizacoes é paginado em 20 tentativas + uma para determinar próxima
+página. Revisões em execução não são oferecidas como revisões consolidadas.
+Selecionar a última revisão deixa a API resolver a revisão consolidada atual;
+as páginas seguintes mantêm o número e a janela retornados.
+
+GET leituras resolve metadados primeiro, abre a última página de 100 registros
+e fixa início/fim/revisão ao paginar. Há filtro de temperatura/umidade e janela
+opcional dentro da sessão. São preservados valor indisponível, estado inválido,
+conflito, atraso desconhecido, fora de ordem, chegada após encerramento e
+ocorrências. Não se removem silenciosamente barreiras temporais, interpolam
+leituras ou convertem ausência em produção zero. Valor/unidade permanecem como
+retornados, sem transformar temperatura/umidade em medição de gás.
+
+A página Monitoramento anterior foi substituída pela seleção paginada de carga,
+painel de sessões e este painel de aquisição. Foi removida a apresentação de
+"última leitura" calculada sobre a primeira página de 100 registros, assim como
+a comparação Ambiente × Produto que não era sustentada pelo contrato dessas
+leituras. A navegação recebida de Cargas continua selecionando a carga correta.
+Uma consulta direta da carga exige JWT e valida sua viagem antes de exibi-la;
+IDs de navegação não substituem autorização do backend.
+
+### Qualidade temporal
+
+GET qualidade usa G operacional positivo, informado explicitamente, sem valor
+científico pré-preenchido. O serviço JavaScript existente foi ajustado para
+aceitar os parâmetros obrigatórios e o cancelamento da consulta. A requisição
+fixa a mesma revisão/janela das leituras. O filtro de tipo restringe a tabela;
+a qualidade continua considerando as fontes da sessão, conforme a API.
+
+Mostram-se cobertura, duração coberta/não coberta, conflitos, inválidos e
+classificação desconhecida de atraso. Percentual null continua Indeterminada.
+Os intervalos de lacuna são apresentados em páginas locais de 20, com motivos
+e horários retornados. Cobertura temporal de aquisição não é cobertura de
+aplicabilidade de q(T), concentração, eficácia de exaustão ou classe de risco.
+Nenhum cálculo científico ou limiar de etileno foi adicionado ao frontend.
+
+Revisão 0 é exibida quando não há aquisição. A API não aceita `revisao=0` como
+filtro, então a consulta omite esse parâmetro; se uma aquisição surgir no
+intervalo e a resposta mudar de revisão/janela, a UI rejeita o resultado e
+solicita atualização, em vez de misturar os contextos. Trocar sessão/janela
+cancela consultas anteriores e oculta resultados de qualidade de outra janela.
+
+### Alterações de backend explicitamente adiadas
+
+**Não implementadas nem publicadas nesta entrega.** Registrar para trabalho
+posterior, sem contornar as proteções atuais:
+
+1. **Catálogo/provisionamento de sensores por contexto autorizado.** Necessário
+   para a primeira sessão de carga sem histórico. Definir contrato e política
+   de autorização para consultar sensores disponíveis àquela carga/viagem,
+   distinguindo dispositivo ativo, tipo, unidade, vínculo e ambiente. Critérios
+   futuros: sem JWT rejeitado; produtor/cliente/transportadora de outro escopo
+   não descobrem dispositivos; sem chaves privadas nas respostas; sessão ainda
+   revalida disponibilidade/conflitos ao iniciar. Cadastro/vínculo de hardware
+   precisa de fluxo administrativo próprio. A UI atual continua oferecendo
+   apenas sensores do histórico autorizado, sem campo livre para UUID; sem
+   essas referências, o primeiro início permanece bloqueado.
+2. **Seleção comercial de produtores/clientes para GESTOR.** Definir relação ou
+   consulta autorizada apropriada para criar cargas. GET empresas atual lista
+   vínculos do usuário e não é catálogo comercial global. Não adicionar vínculos
+   extras ou liberar listagem global como atalho. ADMIN pode preparar as cargas
+   até existir esse contrato.
+3. **Escala e consultas agregadas.** Avaliar paginação de intervalos de qualidade
+   no servidor: hoje a resposta retorna todos os intervalos e apenas a exibição
+   é paginada no browser. Avaliar contrato explícito para fixar revisão 0 e
+   indicadores/consultas agregados sem carregar histórico amplo. Nenhuma dessas
+   mudanças foi simulada na API ou usada como se estivesse disponível.
+
+### Validação e pendências de frontend
+
+227 testes aprovados (192 anteriores + 35 novos), build concluído e lint sem
+erros, com avisos preexistentes/tamanho do bundle. Testes usam HTTP simulado:
+papéis/escopo, origens, complementação, 202, estados de falha/parcial,
+idempotência/reconciliação, paginação de tentativas/leituras/lacunas, janela,
+revisão, G obrigatório, null/zero, conflitos e qualidade indeterminada.
+O mock do ciclo de sessões ganhou apenas as respostas das consultas reais de
+viagem/carga introduzidas na nova seleção. Os 192 testes anteriores passaram.
+Não houve leitura/gravação de produção, chamada real ao ThingSpeak, migration,
+alteração no backend, deploy ou homologação visual em Vercel.
+
+Próximos incrementos de frontend: configurações/avaliações preventivas,
+evidências/decisões e intervenção virtual. A paginação da lista central de
+viagens, agregados de Dashboard e demais consultas legadas ainda precisam de
+revisão; este incremento não declara todos os fluxos do produto concluídos.
+
 ## Incremento 5 — declaração e ciclo de sessões — 24/11/2026
 
 Na branch `feature-integracao-operacional-backend`, o painel Declaração e sessões
