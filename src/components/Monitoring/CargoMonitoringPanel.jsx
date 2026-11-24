@@ -7,6 +7,7 @@ import StartSessionForm from "./StartSessionForm";
 import EndSessionForm from "./EndSessionForm";
 import AcquisitionPanel from "./AcquisitionPanel";
 import PreventivePanel from "./PreventivePanel";
+import VirtualInterventionPanel from "./VirtualInterventionPanel";
 import { obterMonitoramentoCarga } from "../../services/cargaService";
 import { canOperateTrip } from "../../services/logisticsService";
 import { lifecycleError, normalizedCargo, normalizedTrip, readSession, readSessionPage, SESSION_PAGE_SIZE } from "../../services/monitoringLifecycleService";
@@ -118,6 +119,7 @@ function MonitoringWorkspace({ user, cargo: sourceCargo, trip: sourceTrip, busy 
         </div>}
         <AcquisitionPanel key={detail.data.id} session={detail.data} trip={trip} user={user} busy={busy} onBusy={onBusy} />
         <PreventivePanel key={`preventive:${detail.data.id}`} session={detail.data} trip={trip} user={user} busy={busy} onBusy={onBusy} />
+        <VirtualInterventionPanel key={`virtual:${detail.data.id}`} session={detail.data} trip={trip} user={user} busy={busy} onBusy={onBusy} />
       </>}
     </Card>}
     {form?.kind === "end" && canWrite && <EndSessionForm key={`${form.session.id}:${form.action}`} session={form.session} trip={trip} action={form.action}

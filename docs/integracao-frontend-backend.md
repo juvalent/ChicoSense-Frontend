@@ -1,5 +1,50 @@
 # Integração frontend–backend: autenticação e sessão
 
+## Incremento 8 — autorização humana e exaustão virtual — 24/11/2026
+
+Em Cargas ou Monitoramento → sessão → Abrir intervenções virtuais.
+Listagem paginada, detalhe atualizado e trilha ordenada das ações são consultas
+sem efeitos colaterais. Pedido exige justificativa e duração decimal explícita
+maior que zero e até 86400 segundos. Não envia estado, relógio, dispositivo,
+comando físico nem credenciais. Referência é opcional; seleção paginada de
+alerta aberto/em análise, avaliação ou análise de etileno da mesma sessão,
+sem entrada livre de UUID. A referência selecionada é exibida antes de confirmar.
+
+Solicitar não autoriza nem inicia. O detalhe GET atual fornece ações permitidas;
+ADMIN/GESTOR da transportadora podem atuar conforme esse retorno. OPERADOR
+somente retira solicitação própria ainda SOLICITADA ou encerra execução própria,
+conforme autorização atual. CONSULTA e vínculos externos não têm comandos.
+O backend revalida estados, referências, ocupação e permissões a cada gravação.
+
+AUTORIZAR, RECUSAR, INICIAR, ENCERRAR, CANCELAR e REGISTRAR_FALHA abrem formulário
+de justificativa antes do POST. Cada tentativa usa UUID idempotente; resposta
+incerta congela dados e preserva corpo/chave ao fechar/reabrir o mesmo formulário.
+Não há polling, scheduler, POST automático, encerramento por temporizador ou
+comando ao hardware. Prazo excedido é a projeção retornada no instante da consulta.
+Encerramento administrativo permitido pelo backend continua acessível após fim
+da sessão. Avisos de contexto alterado, ocupação e sessão terminal com execução
+pendente permanecem visíveis. Estado virtual não comprova remoção de etileno.
+
+Consultas rejeitam identidades incompatíveis de sessão, viagem, carga, modalidade
+ou ações desconhecidas. Históricos compartilhados agora também conferem vínculo
+com alerta/intervenção solicitados; confirmação de UUID é exigida nos contratos
+que o retornam. Foram acrescentados testes das quatro decisões de alerta e de
+evidência cruzada, além dos testes específicos de intervenção.
+
+Validação final: 291 testes aprovados em 10 arquivos (64 novos desde os 227 do
+incremento 6), build aprovado e lint sem erros; persistem avisos anteriores e
+bundle acima de 500 kB. HTTP inteiramente simulado nos testes: não houve acesso
+ao banco real nem alteração do backend. Sem push ou deploy. Homologação visual
+e integração autenticada no ambiente publicado continuam pendentes.
+
+Antes de considerar toda a interface concluída, revisar paginação das páginas
+legadas (inclusive a lista central de viagens e a Central de Alertas), agregados
+de dashboard e desempenho; as listas dos novos painéis já são paginadas.
+O formulário preventivo ainda omite vínculo opcional à análise de etileno;
+o fluxo de intervenção permite essa referência contextual. Catálogo de sensores,
+consulta comercial para GESTOR e melhorias de escala do backend permanecem
+registrados como adiados abaixo, sem contornar autorização no frontend.
+
 ## Incremento 7 — avaliação preventiva e decisões humanas — 24/11/2026
 
 Em Cargas ou Monitoramento → sessão → Abrir avaliação preventiva e alertas.

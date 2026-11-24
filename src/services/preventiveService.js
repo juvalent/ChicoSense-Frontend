@@ -9,7 +9,12 @@ export const scoped = (row, sessionId) => {
 export async function readOperationalPage(sessionId, path, collection, offset, signal) {
   const { data } = await api.get(`${sessionPath(sessionId)}/${path}`, { params: { limit: 20, offset }, signal });
   if (!Number.isInteger(data?.total) || data.total < 0 || !Array.isArray(data[collection])) throw new Error("Página operacional inválida.");
-  data[collection].forEach((row) => { if (row.sessao_id !== undefined) scoped(row, sessionId); });
+  const parts = path.split("/");
+  data[collection].forEach((row) => {
+    if (collection !== "evidencias") scoped(row, sessionId);
+    if (!row.id || (parts[0] === "alertas" && parts[1] && row.alerta_id !== parts[1]) ||
+        (parts[0] === "intervencoes-simuladas" && parts[1] && row.intervencao_id !== parts[1])) throw new Error("Histórico incompatível com o recurso.");
+  });
   return { records: data[collection], total: data.total };
 }
 export async function readOperationalDetail(sessionId, path, expectedId, signal) {
@@ -22,7 +27,7 @@ export async function postOperational(sessionId, path, payload, target) {
   const { data } = await api.post(`${sessionPath(sessionId)}/${path}`, payload);
   scoped(data, sessionId);
   // Decision responses do not echo the idempotency key in the current contract.
-  if ((data.chave_idempotencia && data.chave_idempotencia !== payload.chave_idempotencia) ||
+  if ((!path.endsWith("/decisoes") && data.chave_idempotencia !== payload.chave_idempotencia) ||
       (target && data[target.field] !== target.id) || (payload.acao && data.acao !== payload.acao)) throw new Error("Confirmação incompatível com a solicitação.");
   return data;
 }

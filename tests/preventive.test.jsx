@@ -45,6 +45,28 @@ describe("contrato preventivo", () => {
   it("rejeita resposta de outra sessão", async () => { api.defaults.adapter = async (c) => reply(c, { total: 1, alertas: [{ id: "a", sessao_id: "other" }] }); await expect(readOperationalPage(session.id, "alertas", "alertas", 0)).rejects.toThrow(); });
 });
 describe("interface preventiva", () => {
+  it.each(["RECONHECER", "OBSERVAR", "RESOLVER", "DESCARTAR"])("registra decisão %s e consulta evidências", async (action) => {
+    const calls = [];
+    const alert = { id: "alert", sessao_id: session.id, tipo: "COBERTURA_INSUFICIENTE", nivel: "INFORMATIVO", status: "ABERTO" };
+    api.defaults.adapter = async (c) => {
+      calls.push(c);
+      if (c.method === "post") return reply(c, { id: "decision", sessao_id: session.id, alerta_id: alert.id, ...JSON.parse(c.data) });
+      if (c.url.endsWith("/alertas/alert")) return reply(c, alert);
+      if (c.url.endsWith("/evidencias")) return reply(c, { total: 1, evidencias: [{ id: "evidence", alerta_id: alert.id, avaliacao_id: "evaluation", evidencia: { percentual: null, mensagem: "Cobertura desconhecida" } }] });
+      const key = c.url.endsWith("configuracoes-ambientais") ? "configuracoes" : c.url.endsWith("avaliacoes-preventivas") ? "avaliacoes" : c.url.endsWith("decisoes") ? "decisoes" : "alertas";
+      return reply(c, { total: key === "alertas" ? 1 : 0, [key]: key === "alertas" ? [alert] : [] });
+    };
+    render(<Harness />); await open(); fireEvent.click(await screen.findByText("Consultar alerta alert"));
+    await screen.findByText("Cobertura desconhecida"); fireEvent.click(screen.getByRole("button", { name: action, exact: true }));
+    fireEvent.change(screen.getByLabelText("Justificativa"), { target: { value: "Verificação humana documentada" } });
+    fireEvent.submit(screen.getByRole("form", { name: `${action} alerta` }));
+    await waitFor(() => expect(calls.filter((c) => c.method === "post")).toHaveLength(1));
+    expect(JSON.parse(calls.find((c) => c.method === "post").data)).toMatchObject({ acao: action, justificativa: "Verificação humana documentada" });
+  });
+  it("rejeita evidência vinculada a outro alerta", async () => {
+    api.defaults.adapter = async (c) => reply(c, { total: 1, evidencias: [{ id: "evidence", alerta_id: "other" }] });
+    await expect(readOperationalPage(session.id, "alertas/alert/evidencias", "evidencias", 0)).rejects.toThrow();
+  });
   it("consulta somente sob demanda, sem POST automático", async () => { const calls = mock(); render(<Harness />); expect(calls).toHaveLength(0); await open(); await waitFor(() => expect(calls).toHaveLength(3)); expect(calls.every((c) => c.method === "get")).toBe(true); });
   it.each(["CONSULTA", "OPERADOR"])("oculta configuração para %s", async (role) => { mock(); render(<Harness currentUser={actor(role)} />); await open(); expect(screen.queryByText("Registrar configuração ambiental")).toBeNull(); expect(Boolean(screen.queryByText("Avaliar sem configuração"))).toBe(role === "OPERADOR"); });
   it("não oferece valores científicos por padrão", async () => { mock(); render(<Harness />); await open(); fireEvent.click(screen.getByText("Registrar configuração ambiental")); expect(screen.getByLabelText("Temperatura mínima (°C)").value).toBe(""); expect(screen.getByLabelText("Cobertura mínima (%)").value).toBe(""); });
