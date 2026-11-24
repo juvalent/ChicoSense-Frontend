@@ -1,11 +1,13 @@
 import Card from "../UI/Card";
 import EmptyState from "../UI/EmptyState";
 import ViagemCargasTable from "../Tables/ViagemCargasTable";
+import Button from "../UI/Button";
 
 const statusLabels = {
   in_transit: "Em trânsito",
   scheduled: "Programada",
   completed: "Concluída",
+  cancelled: "Cancelada",
 };
 
 function formatDateTime(value) {
@@ -27,7 +29,7 @@ function formatDateTime(value) {
     .replace(",", "");
 }
 
-export default function ViagemDetalhes({ trip, onOpenLoad }) {
+export default function ViagemDetalhes({ trip, onOpenLoad, onOpenCargas, busy = false }) {
   const loads = Array.isArray(trip?.loads) ? trip.loads : [];
 
   return (
@@ -69,16 +71,17 @@ export default function ViagemDetalhes({ trip, onOpenLoad }) {
 
       <div className="trip-details__loads">
         <h3 className="trip-details__loads-title">
-          Cargas desta viagem ({loads.length})
+          Cargas desta viagem {Array.isArray(trip?.loads) ? `(${loads.length})` : ""}
         </h3>
+        <Button onClick={onOpenCargas} disabled={busy}>Abrir cargas da viagem</Button>
 
-        {loads.length === 0 ? (
+        {!Array.isArray(trip?.loads) ? <p>Consulte as cargas autorizadas na página de Cargas.</p> : loads.length === 0 ? (
           <EmptyState
             title="Nenhuma carga vinculada"
             description="As cargas desta viagem aparecerão aqui quando forem cadastradas."
           />
         ) : (
-          <ViagemCargasTable loads={loads} onOpenLoad={onOpenLoad} />
+          <ViagemCargasTable loads={loads} onOpenLoad={(load) => { if (!busy) onOpenLoad?.(load); }} />
         )}
       </div>
     </Card>

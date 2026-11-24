@@ -1,5 +1,92 @@
 # Integração frontend–backend: autenticação e sessão
 
+## Incremento 4 — cargas, caixas e estados logísticos — 24/11/2026
+
+Na mesma branch `feature-integracao-operacional-backend`, a página Cargas passa a
+consultar a viagem atual e listar cargas por páginas de 20 (mais um registro
+para verificar a próxima página). A busca foi preservada e explicitamente
+limitada à página carregada. Abrir uma carga mostra a declaração existente e
+as caixas daquela carga, também paginadas; consulta ausente não vira zero.
+Os parâmetros de navegação tripId/loadId são mantidos. Um loadId só abre
+automaticamente se estiver na página carregada; não autoriza consulta extra de
+um registro fora do conjunto retornado. O adaptador mantém as referências
+originais e statusApi, preservando os aliases visuais usados nas outras telas.
+
+ADMIN pode operar os recursos sujeitos às validações do servidor. GESTOR e
+OPERADOR precisam de vínculo ativo com a transportadora **daquela viagem**.
+Ter vínculo com outra transportadora ou somente com produtor/cliente não
+habilita escrita. CONSULTA permanece somente leitura, inclusive quando tem
+vínculo com a transportadora. O backend continua autorizando cada requisição.
+
+Para criar carga, a UI seleciona produto ativo, produtor ativo e cliente opcional
+nos catálogos que a própria conta pode consultar. As opções são paginadas,
+sem carregar todos os usuários/empresas ou consultar cadastros globais como
+ADMIN por trás de uma conta GESTOR. Os IDs são referências escolhidas em
+seletores, não campos livres nem comprovação de autorização. O corpo do POST
+não inclui viagem_id: a viagem vem do caminho da rota existente.
+
+**Limitação preservada:** GET empresas só lista os vínculos do não-ADMIN.
+Consequentemente um GESTOR vinculado somente à transportadora não tem produtor
+disponível para criar carga. A tela informa a limitação e orienta solicitar o
+cadastro da carga por ADMIN. Esta etapa não cria vínculos adicionais, amplia
+acesso ou inventa endpoint de catálogo comercial. O lookup autorizado de
+produtores/clientes continua sendo uma decisão pendente de backend.
+GESTOR pode editar cargas já existentes sem consultar esses catálogos.
+
+Cargas novas são admitidas somente em viagens PLANEJADA/EM_ANDAMENTO. Campos:
+identificação, produto/produtor/cliente, quantidade declarada de caixas,
+quantidade e unidade em conjunto, origem e observações. Quantidade Decimal
+continua string, com vírgula convertida para ponto e até quatro casas decimais;
+vazio é null, quantidade deve ser positiva, e zero é permitido apenas na
+contagem declarada de caixas (inteiro até 2147483647).
+Na edição não se transferem viagem, produto, produtor ou cliente.
+
+Caixas são criadas no caminho da carga, com identificação, código externo, peso
+opcional e observações. O contrato não define unidade de peso: a UI não presume
+kg nem usa esse valor como massa científica. A contagem declarada de caixas não
+é sobrescrita pela quantidade de registros. Não há exclusão ou transferência de
+caixas/cargas. Registros entregues/cancelados (carga) ou entregues/avariados
+(caixa) permitem somente observações, conforme o backend.
+
+As opções de estado reproduzem as transições existentes:
+
+- Viagem PLANEJADA → EM_ANDAMENTO ou CANCELADA; EM_ANDAMENTO → CONCLUIDA.
+  Início e chegada reais são informados explicitamente no horário do navegador
+  e enviados em ISO UTC. A conclusão exige chegada >= início. Se um registro
+  legado não tiver início real, a conclusão pede esse dado, sem inventá-lo.
+- Carga PLANEJADA → EM_TRANSITO (viagem em andamento) ou CANCELADA;
+  EM_TRANSITO → ENTREGUE (viagem em andamento ou concluída).
+- Caixa REGISTRADA → EM_TRANSITO (carga em trânsito) ou AVARIADA;
+  EM_TRANSITO → ENTREGUE (carga em trânsito/entregue) ou AVARIADA.
+
+Em Viagens, as operações ficam nos detalhes e há uma aba Canceladas e acesso
+direto às cargas. A interface não afirma mais que há zero cargas quando a
+resposta de viagem não inclui essa coleção. Alterar viagem não atualiza
+automaticamente cargas, caixas ou sessões: cada operação usa sua própria rota.
+Campos de estrutura de viagem (rota/frota/saída prevista) não são editados por
+este formulário de estados; permanecem disponíveis somente no cadastro inicial.
+
+Consultas pendentes são canceladas ao trocar de contexto. Formulários/detalhes
+anteriores são descartados ao paginar/trocar viagem. Os controles locais de
+mudança de contexto e o duplo envio são bloqueados durante a gravação. Erros
+401/403/404/409/422 não viram sucesso ou lista vazia; timeout não repete POST
+automaticamente e orienta conferir os dados antes de reenviar.
+
+Validação: 153 testes aprovados (114 anteriores + 39 novos), build concluído e
+lint sem erros, com avisos preexistentes/tamanho do bundle. Os testes usam HTTP
+simulado, incluindo perfil/escopo da transportadora, cadastro/edição, hierarquia,
+paginação/busca, transições, preservação de Decimal/null/zero, retorno tardio de
+outra viagem, falhas e duplo envio. Não se fizeram gravações no banco real,
+migrations, alterações no backend ou no motor científico nesta etapa.
+Não houve homologação visual em produção.
+
+Pendências: declaração PUT, ciclo de sessões/aquisição, avaliações/decisões e
+intervenções. Catálogo de sensores e lookup comercial para GESTOR continuam
+dependendo de definição do backend. A lista central de viagens e as outras
+telas legadas ainda precisam de paginação completa: este incremento pagina
+cargas, caixas e os seletores usados no cadastro, sem afirmar cobertura de
+toda a base de viagens.
+
 ## Incremento 3 — administração — 24/11/2026
 
 Na branch `feature-integracao-operacional-backend`, a rota `/administracao` e o

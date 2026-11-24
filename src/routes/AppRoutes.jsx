@@ -126,6 +126,7 @@ export default function AppRoutes({ user, profile }) {
         path="/cargas"
         element={
           <Cargas
+            user={user}
             trips={trips}
             loading={loading}
             error={error}
