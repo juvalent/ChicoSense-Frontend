@@ -32,8 +32,7 @@ function extrairAlertas(data) {
 // CONSULTA DE ALERTAS
 // ==========================================
 
-// Adaptação provisória para os componentes atuais.
-// Confirmar os campos com o JSON real do Swagger.
+// Backend states remain available as statusApi; UI aliases are presentation only.
 function mapAlerta(raw, contexto = {}) {
   return {
     ...raw,
@@ -46,18 +45,13 @@ function mapAlerta(raw, contexto = {}) {
     description: raw.descricao ?? raw.description,
     descricao: raw.descricao ?? raw.description,
 
-    status: raw.status,
-    severity: raw.severidade ?? raw.severity,
+    statusApi: raw.status,
+    status: ({ ABERTO: "new", EM_ANALISE: "monitoring", RESOLVIDO: "resolved", DESCARTADO: "discarded" })[raw.status] ?? "unknown",
+    severity: ({ INFORMATIVO: "info", ATENCAO: "warning", CRITICO: "critical" })[raw.nivel] ?? "unknown",
 
-    timestamp:
-      raw.criado_em ??
-      raw.detectado_em ??
-      raw.timestamp,
+    timestamp: raw.iniciado_em,
 
-    createdAt:
-      raw.criado_em ??
-      raw.detectado_em ??
-      raw.timestamp,
+    createdAt: raw.iniciado_em,
 
     sessaoId: contexto.sessaoId ?? raw.sessao_id,
     cargaId: contexto.cargaId ?? raw.carga_id,

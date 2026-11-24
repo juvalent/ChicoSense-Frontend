@@ -4745,3 +4745,32 @@ body {
   }
 }
 
+.session-readings .monitoramento-filtros {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
+  gap: 16px;
+  align-items: end;
+}
+
+.session-readings label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.session-readings select {
+  width: 100%;
+  min-width: 0;
+}
+
+.session-readings nav .button {
+  margin: 4px 8px 4px 0;
+}
+
+@media (max-width: 760px) {
+  .session-readings .monitoramento-filtros {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+

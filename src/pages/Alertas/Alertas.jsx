@@ -16,7 +16,8 @@ const filters = [
   { value: "all", label: "Todos" },
   { value: "new", label: "Novos" },
   { value: "monitoring", label: "Em acompanhamento" },
-  { value: "resolved", label: "Normalizados" },
+  { value: "resolved", label: "Resolvidos" },
+  { value: "discarded", label: "Descartados" },
 ];
 
 function getErrorMessage(error) {

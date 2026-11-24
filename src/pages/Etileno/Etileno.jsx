@@ -136,7 +136,9 @@ function ResumoCard({ titulo, valor, descricao, Icone, destaque }) {
   );
 }
 
-export default function Etileno({ trips = [] }) {
+import { capabilities } from "../../services/capabilities";
+
+export default function Etileno({ trips = [], user }) {
   const [viagemId, setViagemId] = useState("");
   const [cargaId, setCargaId] = useState("");
   const [sessaoId, setSessaoId] = useState("");
@@ -309,7 +311,7 @@ export default function Etileno({ trips = [] }) {
   async function solicitarAnalise(event) {
     event.preventDefault();
 
-    if (!sessaoId || salvando) return;
+    if (!sessaoId || salvando || !capabilities(user).operate) return;
 
     setErroCriacao("");
 
@@ -437,7 +439,7 @@ export default function Etileno({ trips = [] }) {
           </p>
         </div>
 
-        <button
+        {capabilities(user).operate && <button
           type="button"
           className="button button--primary"
           onClick={abrirNovaAnalise}
@@ -445,7 +447,7 @@ export default function Etileno({ trips = [] }) {
         >
           <Plus size={17} />
           Nova análise
-        </button>
+        </button>}
       </header>
 
       <div className="etileno-aviso">

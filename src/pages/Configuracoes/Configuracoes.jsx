@@ -4,7 +4,6 @@ import {
   Building2,
   Thermometer,
   Radio,
-  RefreshCw,
   UserRound,
 } from "lucide-react";
 
@@ -16,8 +15,9 @@ import LoadingState from "../../components/UI/LoadingState";
 
 import { listarCargas } from "../../services/viagemService";
 import { obterMonitoramentoCarga } from "../../services/cargaService";
-import { listarLeituras } from "../../services/sensorService";
 import { PROFILE_LABELS } from "../../services/authProfile";
+import CargoDeclaration from "../../components/Cards/CargoDeclaration";
+import SessionReadingsPanel from "../../components/Cards/SessionReadingsPanel";
 
 const sections = [
   {
@@ -43,22 +43,6 @@ function display(value) {
     value === ""
     ? "Não informado"
     : String(value);
-}
-
-function formatDate(value) {
-  if (!value) return "Não informado";
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return "Não informado";
-  }
-
-  return new Intl.DateTimeFormat("pt-BR", {
-    dateStyle: "short",
-    timeStyle: "short",
-    timeZone: "America/Recife",
-  }).format(date);
 }
 
 export default function Configuracoes({
@@ -171,7 +155,7 @@ export default function Configuracoes({
           )}
 
           {section === "integrations" && (
-            <IntegrationsSettings />
+            <SessionReadingsPanel trips={trips} />
           )}
         </div>
       </div>
@@ -505,181 +489,10 @@ function MonitoringSettings({ trips }) {
 
       {configuration && !loadingConfiguration && (
         <>
-          <dl className="settings-page__profile">
-            <div>
-              <dt>Pré-resfriamento</dt>
-              <dd>
-                {configuration.precooling === true
-                  ? "Realizado"
-                  : configuration.precooling === false
-                    ? "Não realizado"
-                    : "Não informado"}
-              </dd>
-            </div>
-
-            <div>
-              <dt>Embarque registrado</dt>
-              <dd>
-                {formatDate(
-                  configuration.boardingRecordedAt
-                )}
-              </dd>
-            </div>
-
-            <div>
-              <dt>Intervalo de amostragem</dt>
-              <dd>
-                {configuration.samplingInterval != null
-                  ? `${configuration.samplingInterval} minutos`
-                  : "Não informado"}
-              </dd>
-            </div>
-
-            <div>
-              <dt>Orientações de conservação</dt>
-              <dd>
-                {display(
-                  configuration.conservationGuidance
-                )}
-              </dd>
-            </div>
-          </dl>
-
-          <p className="settings-page__notice">
-            Os limites de temperatura e umidade
-            ainda não estão disponíveis no
-            mapeamento atual da API. Esta consulta
-            apresenta apenas as configurações
-            efetivamente retornadas pelo serviço.
-          </p>
+          <CargoDeclaration declaration={configuration} />
+          <p className="settings-page__notice">Esta declaração identifica a carga. Os limites ambientais são configurados por sessão e não são limiares científicos de risco por etileno.</p>
         </>
       )}
-    </Card>
-  );
-}
-
-function IntegrationsSettings() {
-  const [readings, setReadings] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [consulted, setConsulted] = useState(false);
-
-  async function checkIntegration() {
-    setLoading(true);
-    setError("");
-
-    try {
-      const data = await listarLeituras();
-
-      setReadings(Array.isArray(data) ? data : []);
-    } catch {
-      setError(
-        "Não foi possível consultar a integração ThingSpeak."
-      );
-      setReadings([]);
-    } finally {
-      setLoading(false);
-      setConsulted(true);
-    }
-  }
-
-  useEffect(() => {
-    checkIntegration();
-  }, []);
-
-  const latest = [...readings]
-    .filter((reading) => reading.timestamp)
-    .sort(
-      (a, b) =>
-        new Date(b.timestamp) -
-        new Date(a.timestamp)
-    )[0];
-
-  return (
-    <Card
-      title="Integração com sensores"
-      description="Consulta de leituras recebidas pelo backend."
-    >
-      <div className="settings-page__integration-header">
-        <div className="settings-page__integration-info">
-          <Radio size={22} />
-
-          <div>
-            <strong>ThingSpeak</strong>
-            <span>
-              Integração de dados de sensores
-            </span>
-          </div>
-        </div>
-
-        <Button
-          variant="secondary"
-          onClick={checkIntegration}
-          disabled={loading}
-        >
-          <RefreshCw size={15} />
-          Atualizar
-        </Button>
-      </div>
-
-      {loading ? (
-        <LoadingState message="Consultando sensores..." />
-      ) : error ? (
-        <p
-          className="settings-page__feedback settings-page__feedback--error"
-          role="alert"
-        >
-          {error}
-        </p>
-      ) : consulted ? (
-        <>
-          <dl className="settings-page__profile">
-            <div>
-              <dt>Consulta ao backend</dt>
-              <dd>Realizada com sucesso</dd>
-            </div>
-
-            <div>
-              <dt>Registros retornados</dt>
-              <dd>{readings.length}</dd>
-            </div>
-
-            <div>
-              <dt>Última leitura retornada</dt>
-              <dd>
-                {latest
-                  ? formatDate(latest.timestamp)
-                  : "Nenhuma leitura disponível"}
-              </dd>
-            </div>
-
-            <div>
-              <dt>Temperatura</dt>
-              <dd>
-                {latest?.temperature != null
-                  ? `${latest.temperature} °C`
-                  : "Não informada"}
-              </dd>
-            </div>
-
-            <div>
-              <dt>Umidade</dt>
-              <dd>
-                {latest?.humidity != null
-                  ? `${latest.humidity} %`
-                  : "Não informada"}
-              </dd>
-            </div>
-          </dl>
-
-          <p className="settings-page__notice">
-            Uma consulta bem-sucedida confirma
-            que o backend respondeu à solicitação.
-            Isso não garante que os sensores
-            estejam conectados em tempo real.
-          </p>
-        </>
-      ) : null}
     </Card>
   );
 }

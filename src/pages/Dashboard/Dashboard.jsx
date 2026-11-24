@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Activity,
@@ -8,17 +7,15 @@ import {
 } from "lucide-react";
 
 import MetricCard from "../../components/Cards/MetricCard";
-import ClimateChart from "../../components/Charts/ClimateChart";
+import SessionReadingsPanel from "../../components/Cards/SessionReadingsPanel";
 import TransitTripsTable from "../../components/Tables/TransitTripsTable";
 import Card from "../../components/UI/Card";
 import EmptyState from "../../components/UI/EmptyState";
 import ErrorState from "../../components/UI/ErrorState";
 import LoadingState from "../../components/UI/LoadingState";
-import { listarLeituras } from "../../services/sensorService";
 
 export default function Dashboard({
   user,
-  profile,
   summary = {},
   trips = [],
   tripsLoading = false,
@@ -27,42 +24,17 @@ export default function Dashboard({
 }) {
   const navigate = useNavigate();
 
-  const [sensorReadings, setSensorReadings] = useState([]);
-  const [sensorLoading, setSensorLoading] = useState(true);
-  const [sensorError, setSensorError] = useState("");
-
   const firstName = user?.name?.trim().split(/\s+/)[0];
 
   const transitTrips = trips.filter(
     (trip) => trip.status === "in_transit"
   );
 
-  async function carregarSensores() {
-    setSensorLoading(true);
-    setSensorError("");
-
-    try {
-      const dados = await listarLeituras();
-      setSensorReadings(dados);
-    } catch (err) {
-      console.error("Erro ao buscar sensores:", err);
-      setSensorError(
-        "Não foi possível carregar os dados do ThingSpeak."
-      );
-    } finally {
-      setSensorLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    carregarSensores();
-  }, []);
-
   const metrics = [
     {
       title: "Viagens em trânsito",
-      value: summary.activeTrips,
-      description: "Corredor Vale do São Francisco",
+      value: tripsLoading || tripsError ? undefined : transitTrips.length,
+      description: "Nas viagens carregadas e autorizadas",
       icon: Route,
       tone: "neutral",
     },
@@ -76,7 +48,7 @@ export default function Dashboard({
     {
       title: "Sessões ativas",
       value: summary.activeSessions,
-      description: "Telemetria em andamento",
+      description: "Estado da sessão, sem garantia de aquisição contínua",
       icon: Activity,
       tone: "active",
     },
@@ -125,18 +97,7 @@ export default function Dashboard({
         ))}
       </section>
 
-      <ClimateChart
-        title="Curva Ambiente × Produto (Manga)"
-        description={
-          summary.referenceSession
-            ? `Sessão de referência: ${summary.referenceSession}`
-            : "As leituras da sessão de referência aparecerão aqui."
-        }
-        readings={sensorReadings}
-        loading={sensorLoading}
-        error={sensorError}
-        onRetry={carregarSensores}
-      />
+      <SessionReadingsPanel trips={trips} />
 
       <Card
         title="Viagens em trânsito"

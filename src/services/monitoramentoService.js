@@ -132,7 +132,7 @@ export async function cancelarSessao(sessaoId, payload) {
 // Consulta leituras de uma sessão
 export async function listarLeiturasSessao(
   sessaoId,
-  { limit = 100, offset = 0, tipo } = {}
+  { limit = 100, offset = 0, tipo, revisao, inicio, fim } = {}
 ) {
   if (!sessaoId) {
     return {
@@ -148,6 +148,9 @@ export async function listarLeiturasSessao(
         limit,
         offset,
         ...(tipo ? { tipo } : {}),
+        ...(revisao !== undefined ? { revisao } : {}),
+        ...(inicio ? { inicio } : {}),
+        ...(fim ? { fim } : {}),
       },
     }
   );

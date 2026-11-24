@@ -12,6 +12,8 @@ import ErrorState from "../../components/UI/ErrorState";
 import Input from "../../components/UI/Input";
 import LoadingState from "../../components/UI/LoadingState";
 
+import { capabilities } from "../../services/capabilities";
+
 const tabs = [
   { value: "in_transit", label: "Em trânsito" },
   { value: "scheduled", label: "Programadas" },
@@ -27,6 +29,7 @@ function normalizeSearch(value) {
 }
 
 export default function Viagens({
+  user,
   trips = [],
   loading = false,
   error,
@@ -92,7 +95,7 @@ export default function Viagens({
 
   function handleOpenNewTrip() {
     setSuccessMessage("");
-    setShowNewTrip(true);
+    if (capabilities(user).operate) setShowNewTrip(true);
   }
 
   function handleCloseNewTrip() {
@@ -130,13 +133,13 @@ export default function Viagens({
           </p>
         </div>
 
-        <button
+        {capabilities(user).operate && <button
           type="button"
           className="viagens-page__new-button"
           onClick={handleOpenNewTrip}
         >
           + Nova viagem
-        </button>
+        </button>}
       </div>
 
       {successMessage && (

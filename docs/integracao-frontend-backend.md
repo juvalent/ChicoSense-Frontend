@@ -1,5 +1,49 @@
 # Integração frontend–backend: autenticação e sessão
 
+## Incremento operacional inicial — 24/11/2026
+
+Branch local `feature/integracao-operacional-backend`, baseada na main remota
+`d6f05b1ada675d6de8a73277e1b55491eb880d05`, incluindo o CSS responsivo existente.
+Sem commit, push ou deploy nesta etapa.
+
+- Nova viagem e Nova análise consideram conta ativa, papel e vínculo ativo com
+  TRANSPORTADORA. ADMIN mantém a abrangência administrativa; CONSULTA e usuários
+  vinculados somente a produtor/cliente ficam sem essas ações. O servidor continua
+  autorizando cada recurso: permissões visuais não garantem acesso a todos os IDs.
+- A declaração da carga preserva o contrato retornado pelo backend, incluindo
+  massa Decimal em string, maturação, lote hipotético, rastreabilidade e versão.
+  Cargas e Configurações mostram esses dados, sem inferir pré-resfriamento ou limites.
+- Alertas mapeiam nivel, iniciado_em e estados ABERTO/EM_ANALISE/RESOLVIDO/DESCARTADO.
+  RESOLVIDO aparece como Resolvido; não comprova normalização do ambiente ou do gás.
+- Dashboard e Integrações usam seleção explícita de viagem/sessão autorizada.
+  Não consultam ThingSpeak global ou afirmam sucesso sem requisição. Sessões da
+  viagem são paginadas; a consulta de leituras abre a última página de 100 registros
+  e fixa a revisão nas páginas seguintes. Atualizar consulta a revisão atual.
+  Mudança de seleção/erro elimina resultados anteriores, sem apresentar ausência
+  de dados como produção zero. O gráfico é descritivo e não calcula etileno.
+- O indicador de viagens em trânsito refere-se apenas à lista carregada. Os demais
+  indicadores permanecem indisponíveis quando não há agregado real fornecido.
+
+Validação: 55 testes locais com HTTP simulado; build Vite; lint. Não se utilizam
+contas de produção nos testes. Permanecem avisos preexistentes de lint e tamanho
+do bundle. Não houve homologação visual ou requisições ao banco nesta etapa.
+
+Pendências para os próximos incrementos:
+
+1. Administração ADMIN de usuários, empresas, vínculos, produtos e parâmetros;
+   cadastro/edição de veículos e motoristas para ADMIN/GESTOR.
+2. Cadastro/edição de cargas/caixas e transições de viagem/carga; declaração PUT.
+3. Iniciar/encerrar/cancelar sessão, sincronização, qualidade e revisão auditável.
+4. Configuração ambiental, avaliação, decisões/evidências e intervenção virtual.
+5. Paginação de viagens/cargas/alertas e da página Monitoramento existente,
+   indicadores agregados e histórico completo. Este incremento não corrige essas
+   outras paginações e não representa cobertura completa das 76 operações.
+6. Definir no backend catálogo autorizado de sensores/dispositivos e seleção de
+   produtor/cliente para a transportadora. Não ampliar vínculos ou liberar dados
+   globais como atalho. O código/backend não foi modificado nesta branch frontend.
+
+O restante deste documento registra o contrato de autenticação já implementado.
+
 Revisão: 24/11/2026. [Diagnóstico](diagnostico-login-vercel.md) · [Vercel](configuracao-vercel.md) · [Checklist](checklist-validacao-producao.md).
 
 ## URL e transporte

@@ -108,6 +108,7 @@ export default function AppRoutes({ user, profile }) {
         path="/viagens"
         element={
           <Viagens
+            user={user}
             trips={trips}
             loading={loading}
             error={error}
@@ -147,6 +148,7 @@ export default function AppRoutes({ user, profile }) {
         path="/etileno"
         element={
           <Etileno
+            user={user}
             trips={trips}
           />
         }
