@@ -1,5 +1,39 @@
 # Integração frontend–backend: autenticação e sessão
 
+## Incremento 7 — avaliação preventiva e decisões humanas — 24/11/2026
+
+Em Cargas ou Monitoramento → sessão → Abrir avaliação preventiva e alertas.
+A Central de Alertas aponta para esse fluxo. Consultas não executam avaliações.
+Configurações, avaliações, alertas, decisões e evidências têm paginação de 20.
+Detalhes são consultados pela sessão; identidades incompatíveis são rejeitadas.
+
+ADMIN/GESTOR da transportadora podem registrar versões imutáveis de configuração.
+GESTOR/OPERADOR da transportadora e ADMIN podem avaliar e decidir; CONSULTA e
+vínculos externos somente consultam. A autorização final permanece no backend.
+Sem valores ambientais predefinidos: faixas, G, cobertura, fundamento, prioridade,
+justificativa e referências são explícitos; maturação/ambiente vêm da sessão.
+Decimais são enviados como strings, com validação por inteiros escalados.
+
+Avaliação exige início/fim/corte não futuros e dentro da sessão; revisão vazia
+usa a última consolidada no corte, zero representa ausência de aquisição.
+Uma configuração é selecionada diretamente em sua página; sem configuração
+o backend registra insuficiência. A análise de etileno contextual é omitida
+neste formulário: não se inventam referências nem se misturam janelas.
+O resultado imutável, limitações e snapshot ficam consultáveis. Risco científico
+de etileno permanece NAO_AVALIADO, separado da prioridade operacional.
+
+Reconhecer, observar, resolver e descartar exigem justificativa. Estado terminal
+aceita observação, sem reabrir; resolver não comprova normalização de gás.
+Timeout/5xx retêm corpo e UUID em memória; repetição somente manual e idêntica,
+inclusive ao fechar/reabrir o formulário no mesmo painel. Recarregar a página
+perde essa memória: consultar históricos antes de iniciar nova tentativa.
+
+Validação inicial: 249 testes aprovados (22 novos), build aprovado e lint sem
+erros, com avisos preexistentes; bundle ainda acima de 500 kB. Nenhum acesso
+ao banco real, backend, motor científico ou deploy. Homologação visual e teste
+integrado no ambiente publicado permanecem pendentes. Mudanças de backend
+continuam explicitamente adiadas na seção correspondente abaixo.
+
 ## Incremento 6 — aquisição, revisões e qualidade IoT — 24/11/2026
 
 Entrega somente no frontend, conforme orientação de adiar mudanças de backend.

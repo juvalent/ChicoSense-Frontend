@@ -1,6 +1,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { RefreshCw } from "lucide-react";
+import { Link } from "react-router-dom";
 
 import AlertItem from "../../components/UI/AlertItem";
 import Card from "../../components/UI/Card";
@@ -227,6 +228,7 @@ export default function Alertas({
         <h1 className="page-title">
           Central de Alertas
         </h1>
+        <p>Para consultar evidências e registrar decisões humanas, <Link to="/monitoramento">abra Monitoramento</Link>, selecione a carga e a sessão e abra Avaliação preventiva e alertas.</p>
 
         <p className="alertas-page__description">
           Acompanhe alterações de temperatura e umidade
