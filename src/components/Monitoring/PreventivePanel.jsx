@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Card from "../UI/Card";
 import Button from "../UI/Button";
+import Select from "../UI/Select";
 import { OperationalForm, OperationalPage, Evidence } from "./OperationalWidgets";
 import { alertActions, configurationPayload, evaluationPayload, justification, operationalWriter, postOperational, readOperationalDetail } from "../../services/preventiveService";
 import { lifecycleError } from "../../services/monitoringLifecycleService";
@@ -22,6 +23,7 @@ export default function PreventivePanel(props) {
 function PreventiveWorkspace({ session, trip, user, busy, onBusy }) {
   const [refresh, setRefresh] = useState(0), [form, setForm] = useState(null), [attempts, setAttempts] = useState({});
   const [selection, setSelection] = useState(null), [error, setError] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
   const writer = operationalWriter(user, trip, session);
   const mutable = writer && session.estado !== "CANCELADA";
   const saved = () => { setForm(null); setSelection(null); setRefresh((n) => n + 1); };
@@ -56,7 +58,8 @@ function PreventiveWorkspace({ session, trip, user, busy, onBusy }) {
     {form && <OperationalForm key={attemptKey} title={form.kind === "configuration" ? "configuração ambiental" : form.kind === "evaluation" ? "avaliação preventiva" : `${form.action} alerta`} fields={fields} build={build} send={(payload) => postOperational(session.id, path, payload, target)} attempt={attempts[attemptKey]} setAttempt={(value) => setAttempts((old) => ({ ...old, [attemptKey]: value }))} busy={busy} onBusy={onBusy} onSaved={saved} onCancel={() => setForm(null)} />}
     <OperationalPage sessionId={session.id} path="configuracoes-ambientais" collection="configuracoes" title="Configurações ambientais" refresh={refresh} busy={busy} renderRecord={config} />
     <OperationalPage sessionId={session.id} path="avaliacoes-preventivas" collection="avaliacoes" title="Avaliações preventivas" refresh={refresh} busy={busy} renderRecord={(row) => <><p>{row.executada_em} · Revisão {row.revisao} · {row.resultado?.status}</p><Button disabled={busy} onClick={() => inspect("avaliacoes-preventivas", row)}>Consultar avaliação {row.id}</Button></>} />
-    <OperationalPage sessionId={session.id} path="alertas" collection="alertas" title="Alertas da sessão" refresh={refresh} busy={busy} renderRecord={(row) => <><p>{row.tipo} · {row.nivel} · {row.status}</p><Button disabled={busy} onClick={() => inspect("alertas", row)}>Consultar alerta {row.id}</Button></>} />
+    <Select label="Situação dos alertas" value={statusFilter} disabled={busy} onChange={(event) => setStatusFilter(event.target.value)} options={[{ value: "", label: "Todas" }, ...["ABERTO", "EM_ANALISE", "RESOLVIDO", "DESCARTADO"].map((value) => ({ value, label: value }))]} />
+    <OperationalPage key={statusFilter} sessionId={session.id} path={`alertas${statusFilter ? `?status=${statusFilter}` : ""}`} collection="alertas" title="Alertas da sessão" refresh={refresh} busy={busy} renderRecord={(row) => <><p>{row.tipo} · {row.nivel} · {row.status}</p><Button disabled={busy} onClick={() => inspect("alertas", row)}>Consultar alerta {row.id}</Button></>} />
     {selection?.kind === "avaliacoes-preventivas" && <Card title="Avaliação imutável"><p>Janela: {selection.data.inicio} a {selection.data.fim} · Corte: {selection.data.corte_aquisicao} · Revisão {selection.data.revisao}</p><Evidence value={selection.data.resultado} /><details><summary>Snapshot de entrada</summary><Evidence value={selection.data.entrada_snapshot} /></details></Card>}
     {selection?.kind === "alertas" && <Card title="Decisão e evidências do alerta">
       <p>{selection.data.tipo} · {selection.data.status} · Risco de etileno NÃO AVALIADO</p>

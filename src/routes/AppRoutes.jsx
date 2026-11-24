@@ -1,22 +1,24 @@
 
-import { useCallback, useEffect, useState } from "react";
+import { lazy, Suspense } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 
 import Card from "../components/UI/Card";
 
-import Dashboard from "../pages/Dashboard/Dashboard";
-import Viagens from "../pages/Viagens/Viagens";
-import Cargas from "../pages/Cargas/Cargas";
-import Monitoramento from "../pages/Monitoramento/Monitoramento";
-import Etileno from "../pages/Etileno/Etileno";
-import Alertas from "../pages/Alertas/Alertas";
-import Historico from "../pages/Historico/Historico";
-import ChicoSenseIA from "../pages/ChicoSenseIA/ChicoSenseIA";
-import Configuracoes from "../pages/Configuracoes/Configuracoes";
-import Frota from "../pages/Frota/Frota";
-import Administracao from "../pages/Administracao/Administracao";
+const Dashboard = lazy(() => import("../pages/Dashboard/Dashboard"));
+const Viagens = lazy(() => import("../pages/Viagens/Viagens"));
+const Cargas = lazy(() => import("../pages/Cargas/Cargas"));
+const Monitoramento = lazy(() => import("../pages/Monitoramento/Monitoramento"));
+const Etileno = lazy(() => import("../pages/Etileno/Etileno"));
+const Alertas = lazy(() => import("../pages/Alertas/Alertas"));
+const Historico = lazy(() => import("../pages/Historico/Historico"));
+const ChicoSenseIA = lazy(() => import("../pages/ChicoSenseIA/ChicoSenseIA"));
+const Configuracoes = lazy(() => import("../pages/Configuracoes/Configuracoes"));
+const Frota = lazy(() => import("../pages/Frota/Frota"));
+const Administracao = lazy(() => import("../pages/Administracao/Administracao"));
 
-import { listarViagens } from "../services/viagemService";
+import useIncrementalList from "../hooks/useIncrementalList";
+import { tripList } from "../services/pagedLists";
+import ListProgress from "../components/UI/ListProgress";
 
 const pages = [];
 
@@ -34,56 +36,12 @@ function InitialPage({ title }) {
   );
 }
 
-function getErrorMessage(error) {
-  if (error?.response?.status === 401) {
-    return "Sua sessão expirou. Faça login novamente.";
-  }
-
-  if (error?.response?.status === 403) {
-    return "Você não possui permissão para consultar as viagens.";
-  }
-
-  const detail = error?.response?.data?.detail;
-
-  if (typeof detail === "string") {
-    return detail;
-  }
-
-  return (
-    error?.message ||
-    "Não foi possível carregar as viagens."
-  );
-}
-
 export default function AppRoutes({ user, profile }) {
-  const [trips, setTrips] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  const reload = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const data = await listarViagens();
-
-      setTrips(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error("Erro ao carregar viagens:", err);
-
-      setError(getErrorMessage(err));
-      setTrips([]);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    reload();
-  }, [reload]);
+  const list = useIncrementalList(user?.id, tripList);
+  const trips = list.records, loading = list.loading && !trips.length, error = list.error, reload = list.retry;
 
   return (
-    <Routes>
+    <><ListProgress list={list} label="viagens" /><Suspense fallback={<p role="status">Carregando página…</p>}><Routes>
       <Route path="/administracao" element={<Administracao user={user} />} />
       <Route path="/frota" element={<Frota user={user} />} />
       {/* Rota inicial */}
@@ -165,6 +123,7 @@ export default function AppRoutes({ user, profile }) {
         path="/alertas"
         element={
           <Alertas
+            user={user}
             trips={trips}
             tripsLoading={loading}
             tripsError={error}
@@ -225,6 +184,6 @@ export default function AppRoutes({ user, profile }) {
           <InitialPage title="Página não encontrada" />
         }
       />
-    </Routes>
+    </Routes></Suspense></>
   );
 }

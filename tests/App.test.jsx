@@ -32,7 +32,7 @@ function submit() {
 describe("login e navegação reais com HTTP mockado", () => {
   it.each(["ADMIN", "GESTOR", "OPERADOR", "CONSULTA"])("login %s alcança dashboard mantendo o papel", async (role) => {
     adapterFor(user(role)); mount(); submit();
-    expect(await screen.findByRole("heading", { name: /Olá, Tester/ })).toBeTruthy();
+    expect(await screen.findByRole("heading", { name: /Olá, Tester/ }, { timeout: 5000 })).toBeTruthy();
     expect(getSessionToken()).toBe("fixture-session");
     expect(screen.getByLabelText(/Perfil de acesso:/).textContent).toContain({ ADMIN: "Administrador", GESTOR: "Gestor", OPERADOR: "Operador", CONSULTA: "Consulta" }[role]);
     fireEvent.click(screen.getByRole("link", { name: "Viagens", exact: true }));

@@ -14,7 +14,7 @@ import Etileno from "../src/pages/Etileno/Etileno";
 
 const carrier = { id: "carrier-1", ativo: true, tipo: "TRANSPORTADORA" };
 const trip = { id: "trip-1", code: "DEMO trip", origin: "Origem", destination: "Destino" };
-const session = { id: "session-1", lote_codigo: "DEMO", estado: "ATIVA", ambiente_aquisicao: "LABORATORIO", lote_hipotetico: true };
+const session = { id: "session-1", viagem_id: trip.id, carga_id: "cargo-1", lote_codigo: "DEMO", estado: "ATIVA", ambiente_aquisicao: "LABORATORIO", lote_hipotetico: true };
 function readings(offset, limit) {
   return { sessao_id: session.id, revisao: 3, total: 1000, offset, limit,
     leituras: [{ id: "reading", tipo: "TEMPERATURA", valor: "13.0000", estado: "VALIDA", medida_em: "2026-11-24T12:00:00Z" }] };

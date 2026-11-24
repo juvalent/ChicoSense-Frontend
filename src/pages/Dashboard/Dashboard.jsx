@@ -101,7 +101,7 @@ export default function Dashboard({
 
       <Card
         title="Viagens em trânsito"
-        description="Rotas em deslocamento no momento."
+        description="Rotas em deslocamento entre as viagens carregadas. Use Carregar mais viagens para ampliar a consulta."
       >
         {tripsLoading ? (
           <LoadingState message="Carregando viagens…" />
@@ -109,8 +109,8 @@ export default function Dashboard({
           <ErrorState message={tripsError} onRetry={onRetryTrips} />
         ) : transitTrips.length === 0 ? (
           <EmptyState
-            title="Nenhuma viagem em trânsito"
-            description="As viagens aparecerão aqui assim que houver rotas em deslocamento."
+            title="Nenhuma viagem em trânsito entre os registros carregados"
+            description="Carregue mais viagens para ampliar a consulta. Esta lista não é um total global."
           />
         ) : (
           <TransitTripsTable

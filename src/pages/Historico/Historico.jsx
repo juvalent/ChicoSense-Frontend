@@ -1,5 +1,5 @@
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { X } from "lucide-react";
 
 import HistoricoTable from "../Tables/HistoricoTable";
@@ -12,6 +12,8 @@ import ErrorState from "../../components/UI/ErrorState";
 import LoadingState from "../../components/UI/LoadingState";
 
 import { listarCargas } from "../../services/viagemService";
+import useViagemCargas from "../../hooks/useViagemCargas";
+import ListProgress from "../../components/UI/ListProgress";
 
 function normalizeSearch(value) {
   return String(value ?? "")
@@ -53,6 +55,7 @@ export default function Historico({
   const [loadsError, setLoadsError] = useState("");
   const [reloadKey, setReloadKey] = useState(0);
   const [selectedTripId, setSelectedTripId] = useState(null);
+  const productCache = useRef({});
 
   const completedTrips = useMemo(
     () => trips.filter((trip) => trip.status === "completed"),
@@ -73,9 +76,22 @@ export default function Historico({
       setLoadsLoading(true);
       setLoadsError("");
 
-      const results = await Promise.allSettled(
-        completedTrips.map((trip) => listarCargas(trip.id))
-      );
+      // Bound concurrency and summary size. Full cargo access is on demand below.
+      const results = new Array(completedTrips.length);
+      const cache = productCache.current;
+      let nextIndex = 0;
+      await Promise.all(Array.from({ length: Math.min(4, completedTrips.length) }, async () => {
+        while (active && nextIndex < completedTrips.length) {
+          const index = nextIndex++;
+          try {
+            const id = completedTrips[index].id;
+            const value = cache[id] || await listarCargas(id, { params: { limit: 20, offset: 0 } });
+            if (active) cache[id] = value;
+            results[index] = { status: "fulfilled", value };
+          }
+          catch { results[index] = { status: "rejected" }; }
+        }
+      }));
 
       if (!active) return;
 
@@ -235,6 +251,7 @@ export default function Historico({
     if (error) {
       onRetry?.();
     } else {
+      productCache.current = {};
       setReloadKey((value) => value + 1);
     }
   }
@@ -255,6 +272,7 @@ export default function Historico({
         <p className="historico-page__description">
           Consulte informações das viagens concluídas.
         </p>
+        <p>Filtros de produtos usam até 20 cargas por viagem carregada. Abra os detalhes para consultar as demais cargas. Contagens e filtros não representam totais globais.</p>
       </div>
 
       <Card title="Filtros">
@@ -444,7 +462,7 @@ export default function Historico({
               </div>
 
               <div>
-                <dt>Cargas vinculadas</dt>
+                <dt>Cargas carregadas no resumo</dt>
                 <dd>{selectedTrip.loads.length}</dd>
               </div>
 
@@ -453,6 +471,7 @@ export default function Historico({
                 <dd>Concluída</dd>
               </div>
             </dl>
+            <HistoryCargoList key={selectedTrip.id} tripId={selectedTrip.id} />
 
             <div className="historico-page__modal-footer">
               <Button
@@ -467,4 +486,11 @@ export default function Historico({
       )}
     </div>
   );
+}
+
+function HistoryCargoList({ tripId }) {
+  const list = useViagemCargas(tripId);
+  return <Card title="Cargas da viagem concluída"><ListProgress list={list} label="cargas do histórico" />
+    <ul>{list.records.map((cargo) => <li key={cargo.id}>{cargo.code || cargo.id} · {cargo.variety || "Produto não informado"} · {cargo.netWeightKg ?? "Massa não informada"}</li>)}</ul>
+  </Card>;
 }

@@ -27,7 +27,8 @@ function asList(data) {
     "dados"
   );
 
-  return Array.isArray(list) ? list : [];
+  if (!Array.isArray(list)) throw new Error("Formato de lista da API não reconhecido.");
+  return list;
 }
 
 function normalizeText(value) {

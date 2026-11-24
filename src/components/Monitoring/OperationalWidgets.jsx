@@ -12,7 +12,7 @@ import { lifecycleError } from "../../services/monitoringLifecycleService";
 export function Evidence({ value }) {
   if (value === null || value === undefined) return <span>Não informado</span>;
   if (typeof value !== "object") return <span>{String(value)}</span>;
-  return <dl>{Object.entries(value).map(([key, item]) => <div key={key}><dt>{key}</dt><dd><Evidence value={item} /></dd></div>)}</dl>;
+  return <dl className="operational-evidence">{Object.entries(value).map(([key, item]) => <div key={key}><dt>{key}</dt><dd><Evidence value={item} /></dd></div>)}</dl>;
 }
 
 export function OperationalPage({ sessionId, path, collection, title, refresh = 0, busy, renderRecord }) {

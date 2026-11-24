@@ -13,7 +13,8 @@ import Input from "../../components/UI/Input";
 import EmptyState from "../../components/UI/EmptyState";
 import LoadingState from "../../components/UI/LoadingState";
 
-import { listarCargas } from "../../services/viagemService";
+import useViagemCargas from "../../hooks/useViagemCargas";
+import ListProgress from "../../components/UI/ListProgress";
 import { obterMonitoramentoCarga } from "../../services/cargaService";
 import { PROFILE_LABELS } from "../../services/authProfile";
 import CargoDeclaration from "../../components/Cards/CargoDeclaration";
@@ -294,50 +295,15 @@ function OrganizationForm({ organization, onSave }) {
 function MonitoringSettings({ trips }) {
   const [tripId, setTripId] = useState("");
   const [loadId, setLoadId] = useState("");
-  const [loads, setLoads] = useState([]);
+  const cargoList = useViagemCargas(tripId);
+  const loads = cargoList.records, loadingLoads = cargoList.loading;
   const [configuration, setConfiguration] = useState(null);
-  const [loadingLoads, setLoadingLoads] = useState(false);
+
   const [loadingConfiguration, setLoadingConfiguration] =
     useState(false);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    let active = true;
-
-    setLoads([]);
-    setLoadId("");
-    setConfiguration(null);
-    setError("");
-
-    if (!tripId) return;
-
-    async function fetchLoads() {
-      setLoadingLoads(true);
-
-      try {
-        const data = await listarCargas(tripId);
-
-        if (active) {
-          setLoads(Array.isArray(data) ? data : []);
-        }
-      } catch {
-        if (active) {
-          setError(
-            "Não foi possível consultar as cargas da viagem."
-          );
-        }
-      } finally {
-        if (active) setLoadingLoads(false);
-      }
-    }
-
-    fetchLoads();
-
-    return () => {
-      active = false;
-    };
-  }, [tripId]);
-
+  useEffect(() => { setLoadId(""); setConfiguration(null); setError(""); }, [tripId]);
   useEffect(() => {
     let active = true;
 
@@ -437,6 +403,7 @@ function MonitoringSettings({ trips }) {
         </div>
       </div>
 
+      {tripId && <ListProgress list={cargoList} label="cargas das configurações" />}
       {(loadingLoads || loadingConfiguration) && (
         <LoadingState message="Consultando configurações..." />
       )}
@@ -460,7 +427,7 @@ function MonitoringSettings({ trips }) {
       {tripId &&
         !loadingLoads &&
         loads.length === 0 &&
-        !error && (
+        !error && !cargoList.error && (
           <EmptyState
             title="Nenhuma carga encontrada"
             description="Esta viagem não possui cargas disponíveis."
@@ -480,7 +447,7 @@ function MonitoringSettings({ trips }) {
       {loadId &&
         !loadingConfiguration &&
         !configuration &&
-        !error && (
+        !error && !cargoList.error && (
           <EmptyState
             title="Configuração não encontrada"
             description="Não há configuração de monitoramento registrada para esta carga."

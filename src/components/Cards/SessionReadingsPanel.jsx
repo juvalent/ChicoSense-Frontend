@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import Card from "../UI/Card";
 import ClimateChart from "../Charts/ClimateChart";
-import { listarSessoesViagem, normalizarLeituras } from "../../services/monitoramentoService";
+import { normalizarLeituras } from "../../services/monitoramentoService";
+import useIncrementalList from "../../hooks/useIncrementalList";
+import { tripSessionList } from "../../services/pagedLists";
+import ListProgress from "../UI/ListProgress";
 import { loadSessionPage, READING_PAGE_SIZE } from "../../services/sessionReadings";
 
 function errorMessage(error) {
@@ -13,35 +16,14 @@ function errorMessage(error) {
 export default function SessionReadingsPanel({ trips = [] }) {
   const [tripId, setTripId] = useState("");
   const [sessionId, setSessionId] = useState("");
-  const [sessions, setSessions] = useState([]);
-  const [sessionLoading, setSessionLoading] = useState(false);
-  const [sessionError, setSessionError] = useState("");
   const [page, setPage] = useState({ data: null, error: "", loading: false });
   const [request, setRequest] = useState({});
   const [refresh, setRefresh] = useState(0);
   const validTrip = trips.some((trip) => String(trip.id) === tripId);
+  const sessionList = useIncrementalList(validTrip ? tripId : "", tripSessionList);
+  const sessions = sessionList.records, sessionLoading = sessionList.loading, sessionError = sessionList.error;
   const selected = validTrip && sessions.find((session) => session.id === sessionId);
   const selectedId = selected?.id || "";
-
-  useEffect(() => {
-    if (!tripId || !validTrip) return;
-    let cancelled = false;
-    async function load() {
-      setSessionLoading(true); setSessionError("");
-      const result = [];
-      // Page the authorized trip's session list, rather than silently stopping at 100.
-      for (let offset = 0; ; offset += 100) {
-        const batch = await listarSessoesViagem(tripId, { limit: 100, offset });
-        result.push(...batch);
-        if (cancelled || batch.length < 100) break;
-      }
-      return result;
-    }
-    load().then((data) => { if (!cancelled) setSessions(data); })
-      .catch((error) => { if (!cancelled) { setSessions([]); setSessionError(errorMessage(error)); } })
-      .finally(() => { if (!cancelled) setSessionLoading(false); });
-    return () => { cancelled = true; };
-  }, [tripId, validTrip, refresh]);
 
   useEffect(() => {
     if (!selectedId) return;
@@ -69,7 +51,7 @@ export default function SessionReadingsPanel({ trips = [] }) {
     <div className="monitoramento-filtros">
       <label>Viagem das leituras
         <select value={validTrip ? tripId : ""} onChange={(event) => {
-          setTripId(event.target.value); setSessionId(""); setSessions([]); setPage({ data: null, error: "", loading: false }); setRequest({});
+          setTripId(event.target.value); setSessionId(""); setPage({ data: null, error: "", loading: false }); setRequest({});
         }}>
           <option value="">Selecione uma viagem</option>
           {trips.map((trip) => <option key={trip.id} value={trip.id}>{trip.code || trip.id} · {trip.origin} → {trip.destination}</option>)}
@@ -85,8 +67,8 @@ export default function SessionReadingsPanel({ trips = [] }) {
       </label>
       <button type="button" className="button button--secondary" disabled={!validTrip || sessionLoading || page.loading} onClick={() => { setRequest({}); setRefresh((n) => n + 1); }}>Atualizar leituras</button>
     </div>
+    {validTrip && <ListProgress list={sessionList} label="sessões das leituras" />}
     {sessionLoading && <p role="status">Consultando sessões…</p>}
-    {sessionError && <p role="alert">{sessionError}</p>}
     {validTrip && !sessionLoading && !sessionError && sessions.length === 0 && <p>Nenhuma sessão disponível nesta viagem.</p>}
     {!selected && <p>Selecione uma sessão para consultar as leituras. Conexão com a API não comprova recebimento de dados IoT.</p>}
     {selected && <>

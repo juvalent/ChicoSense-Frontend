@@ -18,7 +18,9 @@ import {
   obterAnaliseEtileno,
 } from "../../services/etilenoService";
 
-import { listarSessoesCarga } from "../../services/monitoramentoService";
+import useIncrementalList from "../../hooks/useIncrementalList";
+import { sessionList } from "../../services/pagedLists";
+import ListProgress from "../../components/UI/ListProgress";
 import useViagemCargas from "../../hooks/useViagemCargas";
 
 function formatarData(valor) {
@@ -143,9 +145,10 @@ export default function Etileno({ trips = [], user }) {
   const [cargaId, setCargaId] = useState("");
   const [sessaoId, setSessaoId] = useState("");
 
-  const [sessoes, setSessoes] = useState([]);
-  const [carregandoSessoes, setCarregandoSessoes] = useState(false);
-  const [erroSessoes, setErroSessoes] = useState("");
+  const sessionsPage = useIncrementalList(cargaId, sessionList);
+  const sessoes = sessionsPage.records, carregandoSessoes = sessionsPage.loading, erroSessoes = sessionsPage.error;
+  const [analysisPage, setAnalysisPage] = useState({ id: null, offset: 0 });
+  const analysisOffset = analysisPage.id === sessaoId ? analysisPage.offset : 0;
 
   const [analises, setAnalises] = useState([]);
   const [totalAnalises, setTotalAnalises] = useState(0);
@@ -175,11 +178,12 @@ export default function Etileno({ trips = [], user }) {
   // Isso evita criar uma análise duplicada ao repetir o envio.
   const [chavePendente, setChavePendente] = useState("");
 
+  const cargoPage = useViagemCargas(viagemId);
   const {
     loads,
     loading: carregandoCargas,
     error: erroCargas,
-  } = useViagemCargas(viagemId);
+  } = cargoPage;
 
   const viagens = useMemo(
     () => extrairLista(trips, ["viagens", "items", "dados"]),
@@ -195,37 +199,7 @@ export default function Etileno({ trips = [], user }) {
     (item) => String(item.id) === String(sessaoId)
   );
 
-  useEffect(() => {
-    let ativo = true;
-
-    setSessoes([]);
-    setErroSessoes("");
-    setSessaoId("");
-
-    if (!cargaId) return;
-
-    setCarregandoSessoes(true);
-
-    listarSessoesCarga(cargaId)
-      .then((dados) => {
-        if (!ativo) return;
-
-        setSessoes(
-          extrairLista(dados, ["monitoramentos", "sessoes", "items"])
-        );
-      })
-      .catch((error) => {
-        if (ativo) setErroSessoes(formatarErro(error));
-      })
-      .finally(() => {
-        if (ativo) setCarregandoSessoes(false);
-      });
-
-    return () => {
-      ativo = false;
-    };
-  }, [cargaId]);
-
+  useEffect(() => { setSessaoId(""); }, [cargaId]);
   useEffect(() => {
     let ativo = true;
 
@@ -238,7 +212,7 @@ export default function Etileno({ trips = [], user }) {
 
     setCarregandoAnalises(true);
 
-    listarAnalisesEtileno(sessaoId, { limit: 100, offset: 0 })
+    listarAnalisesEtileno(sessaoId, { limit: 20, offset: analysisOffset })
       .then((dados) => {
         if (!ativo) return;
 
@@ -255,7 +229,7 @@ export default function Etileno({ trips = [], user }) {
     return () => {
       ativo = false;
     };
-  }, [sessaoId, atualizacao]);
+  }, [sessaoId, atualizacao, analysisOffset]);
 
   const ultimaAnalise = useMemo(() => {
     return [...analises].sort(
@@ -544,6 +518,8 @@ export default function Etileno({ trips = [], user }) {
             </label>
           </div>
 
+          {viagemId && <ListProgress list={cargoPage} label="cargas da análise" disabled={salvando} />}
+          {cargaId && <ListProgress list={sessionsPage} label="sessões da análise" disabled={salvando} />}
           {(erroCargas || erroSessoes) && (
             <p className="etileno-erro">
               {formatarErro(erroCargas) || erroSessoes}
@@ -561,7 +537,7 @@ export default function Etileno({ trips = [], user }) {
         />
 
         <ResumoCard
-          titulo="Última análise"
+          titulo="Análise mais recente nesta página"
           valor={
             ultimaAnalise
               ? `ET-${ultimaAnalise.id.slice(0, 8)}`
@@ -705,10 +681,10 @@ export default function Etileno({ trips = [], user }) {
             </div>
           )}
 
+          {sessaoId && <nav className="logistics-actions" aria-label="Paginação de análises"><button type="button" className="button button--secondary" disabled={salvando || carregandoAnalises || analysisOffset === 0} onClick={() => setAnalysisPage({ id: sessaoId, offset: Math.max(0, analysisOffset - 20) })}>Análises anteriores</button><span>Página {analysisOffset / 20 + 1}</span><button type="button" className="button button--secondary" disabled={salvando || carregandoAnalises || analysisOffset + 20 >= totalAnalises} onClick={() => setAnalysisPage({ id: sessaoId, offset: analysisOffset + 20 })}>Próximas análises</button></nav>}
           {totalAnalises > analises.length && (
             <p className="etileno-mensagem">
-              Exibindo {analises.length} de {totalAnalises}
-              análises. Esta consulta retorna até 100 registros.
+              Exibindo {analysisOffset + 1}–{analysisOffset + analises.length} de {totalAnalises} análises.
             </p>
           )}
         </div>

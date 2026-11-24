@@ -1,5 +1,91 @@
 # Integração frontend–backend: autenticação e sessão
 
+## Incremento 9 — paginação legada, desempenho e inspeção visual — 24/11/2026
+
+Implementação validada localmente na mesma branch. Após a validação, o usuário
+autorizou o commit e a publicação exclusivamente da branch de desenvolvimento.
+Essa publicação não inclui merge, alteração da main ou deploy manual.
+Backend, banco real, credenciais, autenticação e motor científico preservados.
+Esta seção atualiza as pendências históricas dos incrementos anteriores.
+
+### Listas e acesso aos registros seguintes
+
+- A lista compartilhada de viagens usa páginas incrementais de 20, com uma
+  sentinela adicional (`limit=21`, `offset=0,20,40…`). Carregar mais viagens
+  amplia as opções nas telas sem uma varredura automática da base.
+- Cargas nas telas Análises de Etileno e Configurações usam o mesmo controle.
+  Sessões nas análises e nas leituras do dashboard também são incrementais;
+  o dashboard deixou de percorrer automaticamente todas as páginas de sessões.
+- A Central de Alertas seleciona viagem → carga → sessão e abre o painel
+  preventivo completo, com evidências e decisões já autorizadas. Não depende
+  de uma declaração atual para consultar alertas históricos nem agrega todas
+  as sessões em chamadas simultâneas. O filtro ABERTO/EM_ANALISE/RESOLVIDO/
+  DESCARTADO é enviado ao servidor e reinicia a paginação dos alertas.
+- O histórico de análises permite páginas anteriores/próximas de 20. O resumo
+  identifica a análise mais recente **na página**, sem sugerir um total global.
+- No Histórico, o resumo de produtos consulta até 20 cargas por viagem, com
+  concorrência limitada a quatro e cache em memória enquanto a tela permanece
+  montada. Atualizar invalida o cache. Os detalhes permitem carregar as demais
+  cargas explicitamente. Filtros de produto no resumo continuam parciais e
+  isso aparece na interface; pesquisa global exige contrato do backend.
+
+AbortController e identificação do contexto impedem que respostas atrasadas
+sejam incorporadas a outra seleção. Páginas repetidas ou IDs incompatíveis
+geram erro e pedem atualização, sem laços automáticos. Falhas e respostas
+malformadas não são convertidas em zero registros bem sucedidos. Listagens
+incrementais mantêm os registros anteriores se a próxima página falhar.
+Paginação por offset não fixa um snapshot: inserções concorrentes podem alterar
+a lista; repetição detectada exige atualização. Paginação por cursor/snapshot
+consistente continua sendo uma possível melhoria de contrato no servidor.
+
+### JavaScript por tela
+
+React.lazy/Suspense divide as rotas e apresenta carregamento da página.
+O build anterior tinha arquivo principal de 897,09 kB; o atual tem 333,42 kB
+(109,28 kB gzip), cerca de 63% menor nesse arquivo. O maior chunk atual tem
+371,67 kB (gráficos/leituras); não há chunks acima de 500 kB nem o aviso anterior.
+O dashboard ainda carrega o chunk dos gráficos quando acessado: não se afirma
+redução equivalente no tráfego total ou no tempo real de carregamento.
+Não houve benchmark de rede, Lighthouse ou teste de carga do serviço publicado.
+
+### Inspeção visual reproduzível e isolada
+
+Executar `npm run dev -- --host 127.0.0.1 --port 5174 --strictPort` e abrir
+`http://127.0.0.1:5174/tests/browser-qa.html`. Fixture de testes fora da entrada
+do build de produção, limitada a localhost/127.0.0.1, com dados inteiramente
+fictícios. Axios usa adapter local, bloqueia todas as gravações e nunca delega
+requisições não reconhecidas à rede. O token fictício não é JWT nem credencial.
+A fixture serve para composição visual, não valida integridade de negócio.
+
+Conferidos no navegador: desktop 1280 px, iframe mobile de 390 px, seleção de
+carga na segunda página (25ª carga), abertura de configuração preventiva,
+campos/justificativas/botões mobile e solicitação exclusivamente virtual no
+desktop. CONSULTA não mostrou botões de configuração ou avaliação. No painel
+mobile inspecionado, largura do conteúdo e da área útil coincidiram em 374 px
+(390 menos scrollbar), sem overflow horizontal. Ajustados espaçamento,
+largura dos textareas, fieldsets e quebra de evidências. Capturas guardadas
+nos outputs do workspace da conversa, sem dados de produção.
+O servidor temporário foi encerrado após a inspeção.
+
+### Validação e fronteira restante
+
+305 testes aprovados em 11 arquivos (291 anteriores + 14 novos). Build aprovado,
+lint sem erros; continuam avisos de código preexistente nas telas legadas.
+Os mocks antigos de sessões passaram a informar viagem/carga como no contrato
+real. O teste de login aguarda até cinco segundos pela primeira rota lazy;
+as verificações de autenticação e papel foram preservadas.
+
+Ainda dependem do backend, conforme decisão de adiar essas alterações:
+totais globais e filtros agregados autorizados, catálogo/provisionamento de
+sensores, consulta comercial de produtores/clientes para GESTOR e paginação
+de intervalos de qualidade. O dashboard mostra indisponibilidade quando não
+há agregado e delimita as contagens às viagens carregadas; não fabrica totais.
+O vínculo opcional de análise no formulário preventivo permanece omitido,
+conforme incremento 7; isso não bloqueia a avaliação ambiental nem a referência
+contextual já disponível nas intervenções virtuais.
+Integração ponta a ponta com Vercel/Render e dados reais ainda exige publicação
+autorizada e validação nesse ambiente. A inspeção local não substitui essa etapa.
+
 ## Incremento 8 — autorização humana e exaustão virtual — 24/11/2026
 
 Em Cargas ou Monitoramento → sessão → Abrir intervenções virtuais.
