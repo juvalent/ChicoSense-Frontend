@@ -57,6 +57,8 @@ function adapter({ configured = declaration, sessions = [session], writeStatus =
       return reply(config, result, writeStatus);
     }
     if (config.url === `/api/v1/cargas/${cargo.id}/monitoramento`) return reply(config, currentDeclaration || {}, currentDeclaration ? readStatus : 404);
+    if (config.url.endsWith("/sensores-disponiveis")) return reply(config, { carga_id: cargo.id, viagem_id: trip.id, ambiente: config.params.ambiente,
+      sensores: Object.values(sensorOrigin).map((sensor) => ({ ...sensor, id: sensor.sensor_id })), total: 2 }, readStatus);
     if (config.url === `/api/v1/cargas/${cargo.id}/monitoramentos`) return reply(config, history.slice(config.params.offset, config.params.offset + config.params.limit), readStatus);
     if (config.url.startsWith("/api/v1/monitoramentos/")) {
       const found = history.find((s) => s.id === config.url.split("/").at(-1));
@@ -78,6 +80,7 @@ async function startForm() {
   fireEvent.click(await screen.findByRole("button", { name: "Iniciar sessão" }));
   await screen.findByRole("option", { name: "Temperatura DEMO · C" });
   fill("Início efetivo da sessão", localInput(60)); fill("Ambiente de aquisição", "LABORATORIO");
+  await screen.findByRole("option", { name: "Temperatura DEMO · C" });
   fill("Sensor de temperatura da sessão", "sensor-temperature"); fill("Sensor de umidade da sessão", "sensor-humidity");
 }
 async function endForm(action = "Encerrar sessão") {
@@ -159,15 +162,20 @@ describe("início de sessão com sensores do histórico autorizado", () => {
     expect(writes(calls)[0].data.chave_idempotencia).toMatch(/^[0-9a-f-]{36}$/);
     expect(calls.some((call) => call.url.includes("sincronizacoes") || call.url.includes("thingspeak"))).toBe(false);
   });
-  it("primeira sessão fica explicitamente bloqueada sem catálogo de sensores", async () => {
+  it("primeira sessão usa catálogo atual mesmo sem histórico", async () => {
     const { calls } = adapter({ sessions: [] }); render(<Harness />);
-    fireEvent.click(await screen.findByRole("button", { name: "Iniciar sessão" })); await screen.findByText(/Não há sensores selecionáveis/);
+    fireEvent.click(await screen.findByRole("button", { name: "Iniciar sessão" })); await screen.findByText(/Selecione início e ambiente para consultar o catálogo/);
     expect(screen.getByRole("button", { name: "Confirmar início da sessão" }).disabled).toBe(true); expect(writes(calls)).toHaveLength(0);
     expect(screen.getByLabelText("Sensor de temperatura da sessão").tagName).toBe("SELECT");
+    fill("Início efetivo da sessão", localInput(60)); fill("Ambiente de aquisição", "LABORATORIO"); await screen.findByRole("option", { name: "Temperatura DEMO · C" });
+    fill("Sensor de temperatura da sessão", "sensor-temperature");
+    fireEvent.click(screen.getByRole("button", { name: "Confirmar início da sessão" })); await screen.findByText("Sessão confirmada.");
+    expect(writes(calls)).toHaveLength(1);
   });
   it("histórico não presume que um sensor está ativo ou cria sensores novos", async () => {
     const { calls } = adapter(); render(<Harness />); await startForm();
-    expect(calls.every((call) => !call.url.includes("/sensores") && !call.url.includes("/dispositivos"))).toBe(true);
+    expect(calls.some((call) => call.url.endsWith("/sensores-disponiveis") && call.method === "get")).toBe(true);
+    expect(calls.every((call) => call.method !== "post" || !call.url.includes("/sensores"))).toBe(true);
     expect(screen.getByText(/O servidor validará vínculo, tipo, unidade, estado atual/)).toBeTruthy();
   });
   it("protótipo do histórico não é oferecido para transporte refrigerado", async () => {

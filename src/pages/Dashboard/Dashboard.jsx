@@ -1,4 +1,7 @@
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { dashboardSummary } from "../../services/backendIntegrationService";
+import Button from "../../components/UI/Button";
 import {
   Activity,
   Bell,
@@ -16,13 +19,21 @@ import LoadingState from "../../components/UI/LoadingState";
 
 export default function Dashboard({
   user,
-  summary = {},
   trips = [],
   tripsLoading = false,
   tripsError,
   onRetryTrips,
 }) {
   const navigate = useNavigate();
+  const [totals, setTotals] = useState({ data: null, error: "", loading: true });
+  const [refresh, setRefresh] = useState(0);
+  useEffect(() => {
+    const controller = new AbortController();
+    dashboardSummary(controller.signal).then((data) => { if (!controller.signal.aborted) setTotals({ data, error: "", loading: false }); })
+      .catch(() => { if (!controller.signal.aborted) setTotals({ data: null, error: "Não foi possível consultar os totais autorizados. Dados indisponíveis não representam zero.", loading: false }); });
+    return () => controller.abort();
+  }, [user?.id, refresh]);
+  const summary = totals.data || {};
 
   const firstName = user?.name?.trim().split(/\s+/)[0];
 
@@ -33,15 +44,15 @@ export default function Dashboard({
   const metrics = [
     {
       title: "Viagens em trânsito",
-      value: tripsLoading || tripsError ? undefined : transitTrips.length,
-      description: "Nas viagens carregadas e autorizadas",
+      value: summary.transitTrips,
+      description: "Total autorizado no backend",
       icon: Route,
       tone: "neutral",
     },
     {
       title: "Cargas monitoradas",
       value: summary.monitoredLoads,
-      description: "Lotes exclusivos de manga",
+      description: "Cargas com declaração de monitoramento",
       icon: Boxes,
       tone: "neutral",
     },
@@ -78,6 +89,9 @@ export default function Dashboard({
         </p>
       </div>
 
+      {totals.error && <p role="alert">{totals.error}</p>}
+      {totals.loading && <p role="status">Consultando totais autorizados…</p>}
+      <Button variant="secondary" disabled={totals.loading} onClick={() => { setTotals({ data: null, error: "", loading: true }); setRefresh((n) => n + 1); }}>Atualizar indicadores</Button>
       <section
         className="dashboard__metrics"
         aria-label="Indicadores da operação"

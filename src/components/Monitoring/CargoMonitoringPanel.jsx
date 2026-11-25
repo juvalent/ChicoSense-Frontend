@@ -8,6 +8,7 @@ import EndSessionForm from "./EndSessionForm";
 import AcquisitionPanel from "./AcquisitionPanel";
 import PreventivePanel from "./PreventivePanel";
 import VirtualInterventionPanel from "./VirtualInterventionPanel";
+import SensorProvisioning from "./SensorProvisioning";
 import { obterMonitoramentoCarga } from "../../services/cargaService";
 import { canOperateTrip } from "../../services/logisticsService";
 import { lifecycleError, normalizedCargo, normalizedTrip, readSession, readSessionPage, SESSION_PAGE_SIZE } from "../../services/monitoringLifecycleService";
@@ -83,6 +84,7 @@ function MonitoringWorkspace({ user, cargo: sourceCargo, trip: sourceTrip, busy 
     </div>
     {!view.loading && !view.error && (view.declaration ? <CargoDeclaration declaration={view.declaration} /> : <p>Dados de monitoramento ainda não declarados. Ausência de declaração não significa produção zero.</p>)}
     {!canWrite && <p>Consulta somente. Operações exigem vínculo com a transportadora desta viagem e perfil autorizado.</p>}
+    {canWrite && user.perfil === "ADMIN" && !closed && <SensorProvisioning cargoId={cargo.id} busy={busy} onBusy={onBusy} />}
     {knownActive && <p>Há sessão ativa nesta página. Encerre ou cancele a sessão antes de alterar a declaração ou iniciar outra.</p>}
     {canWrite && closed && <p>Carga ou viagem encerrada: a declaração permanece histórica. Uma sessão ainda ativa pode ser finalizada conforme suas regras de janela.</p>}
     {form?.kind === "declaration" && canDeclare && <DeclarationEditor cargo={cargo} declaration={view.declaration} attempt={declarationAttempt} setAttempt={setDeclarationAttempt} busy={busy} onBusy={onBusy} onSaved={() => changed("Declaração confirmada.")} onCancel={() => setForm(null)} />}

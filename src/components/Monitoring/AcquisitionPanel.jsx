@@ -6,6 +6,7 @@ import Select from "../UI/Select";
 import SynchronizationForm from "./SynchronizationForm";
 import { canSynchronize, operationalSeconds, readAcquisitionPage, readAcquisitionQuality, readAcquisitionRuns, readingQuery, READING_SIZE, RUN_PAGE_SIZE } from "../../services/acquisitionService";
 import { lifecycleError } from "../../services/monitoringLifecycleService";
+import QualityIntervals from "./QualityIntervals";
 
 const display = (value) => value === null || value === undefined ? "Não informado" : String(value);
 const time = (value) => value ? new Date(value).toLocaleString("pt-BR") : "Não informado";
@@ -131,7 +132,7 @@ function AcquisitionWorkspace({ session, trip, user, busy, onBusy }) {
     </form>
     {activeQuality?.loading && <p role="status">Consultando qualidade…</p>}
     {activeQuality?.error && <p role="alert">{activeQuality.error}</p>}
-    {activeQuality?.data && <QualityResult key={JSON.stringify(qualityRequest)} result={activeQuality.data} />}
+    {activeQuality?.data && <QualityResult key={JSON.stringify(qualityRequest)} result={activeQuality.data} sessionId={session.id} />}
   </Card>;
 }
 
@@ -140,15 +141,16 @@ function ReadingTable({ readings }) {
     {readings.map((reading) => <tr key={reading.id}><td>{time(reading.medida_em)} · {reading.tipo}</td><td>{reading.valor === null || reading.valor === undefined ? "Valor indisponível" : String(reading.valor)} {reading.unidade}</td><td>{reading.estado} · {reading.motivo || "Sem motivo adicional"}<br />Conflito: {flag(reading.conflito_observado)}</td><td>Tardia: {flag(reading.tardia)} · Fora de ordem: {flag(reading.fora_de_ordem)} · Após encerramento: {flag(reading.apos_encerramento)}<br />Recebida: {time(reading.recebida_em)}</td></tr>)}
   </tbody></table></div>;
 }
-function QualityResult({ result }) {
+function QualityResult({ result, sessionId }) {
   return <section aria-label="Resultado de qualidade">
     <p>Revisão {result.revisao} · G {result.intervalo_maximo_s} s. Cobertura temporal não mede etileno nem classifica risco científico.</p>
     {result.metadados_temporais_invalidos && <p>Metadados inválidos: cobertura pode ser indeterminada.</p>}
     {result.indicadores.map((indicator, index) => <Card key={`${indicator.sensor_id || indicator.tipo}:${index}`} title={`Qualidade: ${indicator.tipo}`}>
       <p>Cobertura: {indicator.percentual_cobertura === null || indicator.percentual_cobertura === undefined ? "Indeterminada" : `${indicator.percentual_cobertura}%`} · Coberta: {display(indicator.duracao_coberta_s)} s · Não coberta: {display(indicator.duracao_nao_coberta_s)} s</p>
       <p>Registros: {display(indicator.registros)} · Inválidos: {display(indicator.invalidos)} · Instantes conflitantes: {display(indicator.instantes_conflitantes)} · Atraso desconhecido: {display(indicator.atraso_nao_classificado)}</p>
-      <GapList intervals={indicator.intervalos || []} />
+      {indicator.intervalos && <GapList intervals={indicator.intervalos} />}
     </Card>)}
+    {result.indicadores.some((row) => row.intervalos_total !== undefined) && <QualityIntervals sessionId={sessionId} result={result} />}
     <p>{result.limites}</p><p>Ocorrências: {result.codigos_ocorrencias?.join(", ") || "Nenhum código retornado"}</p>
   </section>;
 }

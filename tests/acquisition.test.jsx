@@ -195,7 +195,7 @@ describe("qualidade de aquisição", () => {
   it("consulta qualidade na mesma revisão/janela e mostra lacunas", async () => {
     const { calls } = adapter(); render(<Harness />); await open(); fill("Intervalo máximo operacional G (s)", "120");
     fireEvent.click(screen.getByRole("button", { name: "Consultar qualidade" })); expect(await screen.findByRole("region", { name: "Resultado de qualidade" })).toBeTruthy();
-    expect(calls.find((call) => call.url.endsWith("/qualidade")).params).toEqual({ ...frame, intervalo_maximo_s: "120" });
+    expect(calls.find((call) => call.url.endsWith("/qualidade")).params).toEqual({ ...frame, intervalo_maximo_s: "120", incluir_intervalos: false });
     expect(screen.getByText(/Cobertura: 90.5%/)).toBeTruthy(); expect(screen.getByText(/Lacuna excessiva/)).toBeTruthy();
   });
   it("cobertura desconhecida permanece indeterminada", async () => {

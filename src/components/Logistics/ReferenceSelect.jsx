@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import Select from "../UI/Select";
 import Button from "../UI/Button";
 import { LOGISTICS_PAGE_SIZE, logisticsError, readReferencePage } from "../../services/logisticsService";
+import { partnerPage } from "../../services/backendIntegrationService";
 
-export default function ReferenceSelect({ label, kind, companyType, value, onChange, required, disabled }) {
+export default function ReferenceSelect({ label, kind, companyType, carrierId, value, onChange, required, disabled }) {
   const [offset, setOffset] = useState(0);
   const [refresh, setRefresh] = useState(0);
   const [view, setView] = useState({ records: [], hasNext: false, loading: true, error: "" });
@@ -12,13 +13,13 @@ export default function ReferenceSelect({ label, kind, companyType, value, onCha
     async function load() {
       setView({ records: [], hasNext: false, loading: true, error: "" });
       try {
-        const data = await readReferencePage(kind, offset, controller.signal);
+        const data = carrierId && companyType ? await partnerPage(carrierId, companyType, offset, controller.signal) : await readReferencePage(kind, offset, controller.signal);
         if (!controller.signal.aborted) setView({ ...data, loading: false, error: "" });
       } catch (error) { if (!controller.signal.aborted) setView({ records: [], hasNext: false, loading: false, error: logisticsError(error) }); }
     }
     load();
     return () => controller.abort();
-  }, [kind, offset, refresh]);
+  }, [kind, companyType, carrierId, offset, refresh]);
   const options = view.records.filter((item) => item.ativo === true && (!companyType || item.tipo === companyType));
   return <div>
     <Select label={label} value={value} required={required} disabled={disabled || view.loading || Boolean(view.error)} onChange={(event) => onChange(event.target.value)}

@@ -47,10 +47,10 @@ export default function LogisticsEditor({ kind, parentId, trip, cargo, record, b
   return <form className="logistics-form" onSubmit={submit} aria-label={`${record ? "Editar" : "Cadastrar"} ${singular}`}>
     <h3>{record ? "Editar" : "Cadastrar"} {singular}</h3>
     {!record && kind === "cargas" && <>
-      <p>Os seletores mostram somente cadastros que sua conta pode consultar. Se o produtor necessário não aparecer em nenhuma página, solicite a um administrador o cadastro da carga.</p>
+      <p>Produtores e clientes são parceiros aprovados pelo ADMIN para a transportadora desta viagem. Solicite aprovação se o parceiro não aparecer.</p>
       <ReferenceSelect label="Produto da carga" kind="produtos" required value={values.produto_id} onChange={(value) => change("produto_id", value)} disabled={saving} />
-      <ReferenceSelect label="Produtor da carga" kind="empresas" companyType="PRODUTOR" required value={values.produtor_id} onChange={(value) => change("produtor_id", value)} disabled={saving} />
-      <ReferenceSelect label="Cliente da carga" kind="empresas" companyType="CLIENTE" value={values.cliente_id} onChange={(value) => change("cliente_id", value)} disabled={saving} />
+      <ReferenceSelect label="Produtor da carga" kind="empresas" companyType="PRODUTOR" carrierId={trip.transportadora_id ?? trip.transportadoraId} required value={values.produtor_id} onChange={(value) => change("produtor_id", value)} disabled={saving} />
+      <ReferenceSelect label="Cliente da carga" kind="empresas" companyType="CLIENTE" carrierId={trip.transportadora_id ?? trip.transportadoraId} value={values.cliente_id} onChange={(value) => change("cliente_id", value)} disabled={saving} />
     </>}
     {record && kind === "cargas" && <p>Viagem, produto, produtor e cliente são preservados nesta edição.</p>}
     <div className="logistics-controls">{fields[kind].map((field) => <Input key={field.name} {...field} value={values[field.name]} disabled={saving || Boolean(terminal)} onChange={(event) => change(field.name, event.target.value)} />)}</div>

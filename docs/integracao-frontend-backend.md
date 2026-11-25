@@ -1,5 +1,63 @@
 # Integração frontend–backend: autenticação e sessão
 
+## Incremento 10 — contratos operacionais do backend — 24/11/2026
+
+Integração validada sobre a branch já publicada em f07aa46. Após a validação,
+o usuário autorizou os commits e a publicação somente das duas branches de
+desenvolvimento, sem merge, migration remota ou deploy manual. Requer o backend da branch
+`feature/integracao-operacional-frontend` e a migration `20261124_0011_parceiros`.
+Publicar somente o frontend não libera os novos contratos.
+
+- Administração → empresas → vínculos de uma transportadora ativa → Gerenciar
+  parceiros comerciais: ADMIN aprova/reativa/revoga produtor ou cliente, com
+  justificativa. Isso não cria associação de usuário nem amplia escopo de cargas.
+- Cadastro de carga usa GET `/api/v1/transportadoras/{id}/parceiros?tipo=...`.
+  A transportadora vem da viagem, jamais de campo livre para contornar autorização.
+  GESTOR/OPERADOR só selecionam parceiros aprovados; ADMIN conserva alcance global.
+  Nova carga revalida essas aprovações no backend. Histórico antigo é preservado.
+- Em declaração/sessões da carga, ADMIN dispõe de Cadastro de sensores: novo
+  dispositivo e seus sensores vinculados à carga/viagem/veículo. Nenhum segredo,
+  leitura ou comando de hardware é produzido. ThingSpeak exige configuração
+  separada da origem de ingestão, conforme fluxo administrativo existente.
+- No início de sessão, data/ambiente explícitos consultam GET
+  `/api/v1/cargas/{id}/sensores-disponiveis`. A primeira sessão já não depende de
+  sensor presente no histórico. O catálogo atual é obrigatório para confirmar,
+  paginado e restrito ao contexto. Reserva e estado são revalidados no POST.
+  O histórico ainda reconcilia tentativas incertas e detecta sessão já aberta.
+- Dashboard usa GET `/api/v1/monitoramento/resumo`: contagens globais dentro do
+  escopo autorizado; ausência/falha do resumo é indisponibilidade, nunca zero.
+  A tabela de viagens continua representando somente as viagens carregadas.
+- Leituras/qualidade enviam revisão zero explicitamente. Qualidade pede
+  `incluir_intervalos=false`; intervalos são consultados em páginas de 20 por GET
+  `/api/v1/monitoramentos/{id}/qualidade/intervalos`, com mesma revisão/janela/G.
+  O backend ainda precisa calcular a sequência completa: não se declara memória
+  constante ou mudança no modelo de cobertura. Clientes antigos continuam aceitos.
+
+Os cadastros administrativos não usam UUID idempotente: PUT de aprovação reutiliza
+o mesmo par, e o identificador global de dispositivo impede duplicação silenciosa.
+Após resposta incerta, consultar catálogo antes de novo cadastro. A interface mantém
+o mesmo corpo em memória se o usuário decidir repetir. Não há repetição automática.
+
+Validação: 321 testes aprovados (305 anteriores + 16 novos), build aprovado e lint
+sem erros, preservando avisos legados. Os mocks anteriores agora incluem catálogo
+atual e aprovação comercial. O teste de navegação por três rotas lazy recebe até
+15 segundos para o fluxo completo, preservando as verificações de JWT e perfil.
+Os testes novos verificam catálogo cruzado, primeira sessão, revisão zero, resumo
+incompleto, paginação de intervalos, aprovação justificada e cadastro sem segredo.
+Os novos controles não foram homologados contra o Render/Vercel nesta etapa.
+
+Backend correspondente validado em PostgreSQL portátil 17.11: 831 testes da suíte
+aprovados, zero falhas/skips, um warning conhecido; 12 testes PostgreSQL e uma
+repetição de nove concorrentes passaram, além de uma checagem HTTP/JWT adicional
+dos novos contratos. Nenhuma dessas execuções usou banco remoto.
+
+Para a equipe: aplicar primeiro a migration autorizada e publicar o backend;
+depois publicar esta branch em Preview, configurar VITE_API_URL de Preview e
+conferir a origem exata do preview no CORS do Render. Usar somente o conjunto de
+demonstração quando a API apontar para o banco real. O relatório do backend contém
+contratos completos e roteiro por ADMIN, GESTOR, produtor e cliente.
+Sem migração automática, merge, alteração da main, seed remoto ou deploy.
+
 ## Incremento 9 — paginação legada, desempenho e inspeção visual — 24/11/2026
 
 Implementação validada localmente na mesma branch. Após a validação, o usuário

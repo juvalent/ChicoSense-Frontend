@@ -30,12 +30,14 @@ api.defaults.adapter = async (c) => {
   if (path === "/health") return response({ status: "ok" });
   if (path.endsWith("/auth/me")) return response(me);
   if (path === "/api/v1/viagens") return response(page(trips, c));
+  if (path === "/api/v1/monitoramento/resumo") return response({ consultado_em: new Date().toISOString(), viagens_total: trips.length, viagens_em_transito: trips.length, cargas_total: allCargos.length, cargas_monitoradas: allCargos.length, sessoes_ativas: allSessions.length, alertas_abertos: 0 });
   const trip = trips.find((row) => path === `/api/v1/viagens/${row.id}`);
   if (trip) return response(trip);
   const parentTrip = trips.find((row) => path === `/api/v1/viagens/${row.id}/cargas`);
   if (parentTrip) return response(page(cargos(parentTrip.id), c));
   const cargo = allCargos.find((row) => path === `/api/v1/cargas/${row.id}` || path.startsWith(`/api/v1/cargas/${row.id}/`));
   if (cargo) {
+    if (path.endsWith("/sensores-disponiveis")) return response({ carga_id: cargo.id, viagem_id: cargo.viagem_id, ambiente: c.params.ambiente, total: 2, sensores: page([{ id: "qa-temp", identificador: "Temperatura QA", tipo: "TEMPERATURA", unidade: "C", contexto: "AMBIENTE" }, { id: "qa-hum", identificador: "Umidade QA", tipo: "UMIDADE", unidade: "%", contexto: "AMBIENTE" }], c) });
     if (path.endsWith("/monitoramentos")) return response(page(sessions(cargo), c));
     if (path.endsWith("/monitoramento")) return response({ carga_id: cargo.id, ...sessions(cargo)[0], versao: 1 });
     return response(cargo);

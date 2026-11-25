@@ -45,9 +45,9 @@ export function readingQuery(values, session) {
   const inicio = isoDate(values.inicio), fim = isoDate(values.fim);
   if ((inicio && new Date(inicio) < new Date(session.inicio)) || (fim && new Date(fim).getTime() > Date.now()) || (fim && session.fim && new Date(fim) > new Date(session.fim)) || (inicio && fim && new Date(fim) < new Date(inicio))) throw new Error("A janela de consulta deve estar dentro da sessão.");
   const revision = values.revisao === "" ? undefined : Number(values.revisao);
-  if (revision !== undefined && (!Number.isInteger(revision) || revision < 1)) throw new Error("Selecione uma revisão consolidada válida.");
+  if (revision !== undefined && (!Number.isInteger(revision) || revision < 0)) throw new Error("Selecione uma revisão consolidada válida.");
   if (!["", "TEMPERATURA", "UMIDADE"].includes(values.tipo)) throw new Error("Tipo de leitura inválido.");
-  return { ...(inicio ? { inicio } : {}), ...(fim ? { fim } : {}), ...(revision ? { revisao: revision } : {}), ...(values.tipo ? { tipo: values.tipo } : {}) };
+  return { ...(inicio ? { inicio } : {}), ...(fim ? { fim } : {}), ...(revision !== undefined ? { revisao: revision } : {}), ...(values.tipo ? { tipo: values.tipo } : {}) };
 }
 
 async function rawReadings(id, params, signal) {
@@ -58,17 +58,17 @@ async function rawReadings(id, params, signal) {
 export async function readAcquisitionPage(id, query, { offset, frame, signal } = {}) {
   if (offset === undefined) {
     const metadata = await rawReadings(id, { ...query, limit: 1, offset: 0 }, signal);
-    if (query.revisao && metadata.revisao !== query.revisao) throw new Error("Revisão incompatível com a consulta.");
+    if (query.revisao !== undefined && metadata.revisao !== query.revisao) throw new Error("Revisão incompatível com a consulta.");
     frame = { revisao: metadata.revisao, inicio: metadata.inicio, fim: metadata.fim };
     if (!metadata.total) return { ...metadata, offset: 0, limit: READING_SIZE };
     offset = Math.floor((metadata.total - 1) / READING_SIZE) * READING_SIZE;
   }
-  const data = await rawReadings(id, { ...query, inicio: frame.inicio, fim: frame.fim, ...(frame.revisao > 0 ? { revisao: frame.revisao } : {}), limit: READING_SIZE, offset }, signal);
+  const data = await rawReadings(id, { ...query, inicio: frame.inicio, fim: frame.fim, revisao: frame.revisao, limit: READING_SIZE, offset }, signal);
   if (data.revisao !== frame.revisao || data.inicio !== frame.inicio || data.fim !== frame.fim) throw new Error("A janela ou revisão mudou. Atualize a consulta.");
   return data;
 }
 export async function readAcquisitionQuality(id, frame, gap, signal) {
-  const data = await obterQualidadeSessao(id, { inicio: frame.inicio, fim: frame.fim, ...(frame.revisao > 0 ? { revisao: frame.revisao } : {}), intervalo_maximo_s: gap }, { signal });
+  const data = await obterQualidadeSessao(id, { inicio: frame.inicio, fim: frame.fim, revisao: frame.revisao, intervalo_maximo_s: gap, incluir_intervalos: false }, { signal });
   if (data?.sessao_id !== id || data.revisao !== frame.revisao || data.inicio !== frame.inicio || data.fim !== frame.fim || !Array.isArray(data.indicadores) || data.natureza !== "COBERTURA_TEMPORAL_DE_AQUISICAO_NAO_E_ESTIMATIVA_DE_ETILENO") throw new Error("Qualidade incompatível com a janela/revisão de leituras. Atualize os dados.");
   return data;
 }

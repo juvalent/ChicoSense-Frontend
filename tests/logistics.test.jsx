@@ -43,6 +43,7 @@ function adapter({ tripData = trip, cargos = [cargo], boxes = [box], companies =
     if (config.url === `/api/v1/cargas/${cargo.id}/monitoramentos`) return reply(config, []);
     if (config.url === "/api/v1/produtos") return reply(config, [product]);
     if (config.url === "/api/v1/empresas") return reply(config, companies);
+    if (config.url.includes("/parceiros")) return reply(config, companies.filter((company) => company.tipo === config.params.tipo).map((company) => ({ ...company, autorizado_para_novas_cargas: true, aprovado: true })));
     if (config.url === "/api/v1/viagens") return reply(config, [latestTrip]);
     return reply(config, { detail: "Unhandled local mock" }, 404);
   };

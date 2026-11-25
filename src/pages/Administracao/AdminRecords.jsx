@@ -3,6 +3,7 @@ import Card from "../../components/UI/Card";
 import Button from "../../components/UI/Button";
 import AdminEditor from "./AdminEditor";
 import CompanyLinks from "./CompanyLinks";
+import BusinessPartners from "./BusinessPartners";
 import { ADMIN_PAGE_SIZE, adminDefinitions, adminError, readAdminPage, readProfiles } from "../../services/adminService";
 
 export default function AdminRecords({ kind, parentId, busy, onBusy, actorId }) {
@@ -73,6 +74,7 @@ export default function AdminRecords({ kind, parentId, busy, onBusy, actorId }) 
     {detail && <div className="admin-detail">
       <Button variant="secondary" disabled={busy} onClick={() => setDetail(null)}>Fechar detalhes</Button>
       {kind === "empresas" && <CompanyLinks key={detail.id} company={detail} busy={busy} onBusy={onBusy} />}
+      {kind === "empresas" && detail.tipo === "TRANSPORTADORA" && detail.ativo && <BusinessPartners key={`partners:${detail.id}`} company={detail} busy={busy} onBusy={onBusy} />}
       {kind === "produtos" && <><h3>Parâmetros de {detail.nome}</h3><AdminRecords key={detail.id} kind="parametros" parentId={detail.id} busy={busy} onBusy={onBusy} actorId={actorId} /></>}
     </div>}
   </Card>;
