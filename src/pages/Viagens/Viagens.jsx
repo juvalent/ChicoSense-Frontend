@@ -5,6 +5,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import ViagemDetalhes from "../../components/Cards/ViagemDetalhes";
 import ViagemTable from "../../components/Tables/ViagemTable";
 import NovaViagemForm from "../../components/Forms/NovaViagemForm";
+import TripOperations from "../../components/Logistics/TripOperations";
 
 import Card from "../../components/UI/Card";
 import EmptyState from "../../components/UI/EmptyState";
@@ -12,10 +13,13 @@ import ErrorState from "../../components/UI/ErrorState";
 import Input from "../../components/UI/Input";
 import LoadingState from "../../components/UI/LoadingState";
 
+import { capabilities } from "../../services/capabilities";
+
 const tabs = [
   { value: "in_transit", label: "Em trânsito" },
   { value: "scheduled", label: "Programadas" },
   { value: "completed", label: "Concluídas" },
+  { value: "cancelled", label: "Canceladas" },
 ];
 
 function normalizeSearch(value) {
@@ -27,6 +31,7 @@ function normalizeSearch(value) {
 }
 
 export default function Viagens({
+  user,
   trips = [],
   loading = false,
   error,
@@ -49,6 +54,7 @@ export default function Viagens({
 
   // Controle do formulário de cadastro
   const [showNewTrip, setShowNewTrip] = useState(false);
+  const [operationBusy, setOperationBusy] = useState(false);
 
   // Mensagem após cadastrar uma viagem
   const [successMessage, setSuccessMessage] = useState("");
@@ -85,6 +91,7 @@ export default function Viagens({
   }, [selectedTripId, selectedTrip]);
 
   function handleOpenTrip(trip) {
+    if (operationBusy) return;
     setSelectedTripId((current) =>
       current === trip.id ? null : trip.id
     );
@@ -92,7 +99,7 @@ export default function Viagens({
 
   function handleOpenNewTrip() {
     setSuccessMessage("");
-    setShowNewTrip(true);
+    if (capabilities(user).operate && !operationBusy) setShowNewTrip(true);
   }
 
   function handleCloseNewTrip() {
@@ -113,7 +120,7 @@ export default function Viagens({
     setSuccessMessage("Viagem cadastrada com sucesso!");
   }
 
-  const controlsDisabled = loading || Boolean(error);
+  const controlsDisabled = loading || Boolean(error) || operationBusy;
 
   return (
     <div className="viagens-page">
@@ -130,13 +137,14 @@ export default function Viagens({
           </p>
         </div>
 
-        <button
+        {capabilities(user).operate && <button
           type="button"
           className="viagens-page__new-button"
+          disabled={operationBusy}
           onClick={handleOpenNewTrip}
         >
           + Nova viagem
-        </button>
+        </button>}
       </div>
 
       {successMessage && (
@@ -239,6 +247,8 @@ export default function Viagens({
         >
           <ViagemDetalhes
             trip={selectedTrip}
+            busy={operationBusy}
+            onOpenCargas={() => navigate("/cargas", { state: { tripId: selectedTrip.id } })}
             onOpenLoad={(load) =>
               navigate("/cargas", {
                 state: {
@@ -248,6 +258,11 @@ export default function Viagens({
               })
             }
           />
+          <TripOperations user={user} trip={selectedTrip} onBusy={setOperationBusy} onSaved={(updated) => {
+            setSelectedTripId(null);
+            setTab(({ PLANEJADA: "scheduled", EM_ANDAMENTO: "in_transit", CONCLUIDA: "completed", CANCELADA: "cancelled" })[updated.status] || "in_transit");
+            onRetry?.();
+          }} />
         </div>
       )}
 

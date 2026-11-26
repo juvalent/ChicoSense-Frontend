@@ -1,11 +1,13 @@
-
 import { useEffect, useState } from "react";
+
 import {
   Building2,
   Thermometer,
   Radio,
-  RefreshCw,
   UserRound,
+  UsersRound,
+  Info,
+  Save,
 } from "lucide-react";
 
 import Card from "../../components/UI/Card";
@@ -13,17 +15,59 @@ import Button from "../../components/UI/Button";
 import Input from "../../components/UI/Input";
 import EmptyState from "../../components/UI/EmptyState";
 import LoadingState from "../../components/UI/LoadingState";
+import ListProgress from "../../components/UI/ListProgress";
 
-import { listarCargas } from "../../services/viagemService";
+import useViagemCargas from "../../hooks/useViagemCargas";
+
 import { obterMonitoramentoCarga } from "../../services/cargaService";
-import { listarLeituras } from "../../services/sensorService";
 import { PROFILE_LABELS } from "../../services/authProfile";
+import { capabilities } from "../../services/capabilities";
+
+import CargoDeclaration from "../../components/Cards/CargoDeclaration";
+import SessionReadingsPanel from "../../components/Cards/SessionReadingsPanel";
+
+import AdminRecords from "../Administracao/AdminRecords";
+
+import "../Administracao/Administracao.css";
+import "./ConfiguracoesVisual.css";
+
+// ==========================================
+// FUNÇÕES AUXILIARES
+// ==========================================
+
+function initials(name) {
+  return String(name ?? "")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0].toUpperCase())
+    .join("");
+}
+
+function display(value) {
+  return value === null ||
+    value === undefined ||
+    value === ""
+    ? "Não informado"
+    : String(value);
+}
+
+// ==========================================
+// SEÇÕES DE CONFIGURAÇÕES
+// ==========================================
 
 const sections = [
   {
     value: "organization",
     label: "Perfil e organização",
     icon: Building2,
+  },
+  {
+    value: "users",
+    label: "Usuários e permissões",
+    icon: UsersRound,
+    adminOnly: true,
   },
   {
     value: "limits",
@@ -37,29 +81,9 @@ const sections = [
   },
 ];
 
-function display(value) {
-  return value === null ||
-    value === undefined ||
-    value === ""
-    ? "Não informado"
-    : String(value);
-}
-
-function formatDate(value) {
-  if (!value) return "Não informado";
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return "Não informado";
-  }
-
-  return new Intl.DateTimeFormat("pt-BR", {
-    dateStyle: "short",
-    timeStyle: "short",
-    timeZone: "America/Recife",
-  }).format(date);
-}
+// ==========================================
+// PÁGINA DE CONFIGURAÇÕES
+// ==========================================
 
 export default function Configuracoes({
   user,
@@ -69,73 +93,128 @@ export default function Configuracoes({
   onSaveOrganization,
 }) {
   const [section, setSection] = useState("organization");
+  const [busy, setBusy] = useState(false);
+
+  // Controle de permissões
+
+  const canAdminister = Boolean(
+    user && capabilities(user).administer
+  );
+
+  const availableSections = sections.filter(
+    (item) => !item.adminOnly || canAdminister
+  );
+
+  const currentSection =
+    section === "users" && !canAdminister
+      ? "organization"
+      : section;
+
+  const userName = user?.name ?? user?.nome;
 
   return (
-    <div className="settings-page">
+    <div className="settings-page settings-visual">
+
+      {/* CABEÇALHO */}
+
       <div className="settings-page__heading">
+
         <span className="settings-page__eyebrow">
           WORKSPACE
         </span>
 
-        <h1 className="page-title">Configurações</h1>
+        <h1 className="page-title">
+          Configurações
+        </h1>
 
         <p className="settings-page__description">
-          Gerencie seu perfil e consulte as configurações
+          Gerencie seu perfil, permissões, configurações
           e integrações do ChicoSense.
         </p>
+
       </div>
 
       <div className="settings-page__layout">
+
+        {/* MENU DE NAVEGAÇÃO */}
+
         <nav
           className="settings-page__nav"
           aria-label="Seções de configurações"
         >
-          {sections.map((item) => {
+
+          {availableSections.map((item) => {
             const Icon = item.icon;
 
             return (
               <button
                 key={item.value}
                 type="button"
+                disabled={busy}
                 className={`settings-page__nav-button ${
-                  section === item.value
+                  currentSection === item.value
                     ? "settings-page__nav-button--active"
                     : ""
                 }`}
                 aria-current={
-                  section === item.value ? "page" : undefined
+                  currentSection === item.value
+                    ? "page"
+                    : undefined
                 }
                 onClick={() => setSection(item.value)}
               >
-                <Icon size={18} aria-hidden="true" />
+
+                <Icon
+                  size={18}
+                  aria-hidden="true"
+                />
+
                 <span>{item.label}</span>
+
               </button>
             );
           })}
+
         </nav>
 
+        {/* CONTEÚDO */}
+
         <div className="settings-page__content">
-          {section === "organization" && (
+
+          {/* PERFIL E ORGANIZAÇÃO */}
+
+          {currentSection === "organization" && (
             <>
               <Card
                 title="Perfil atual"
                 description="Informações do usuário autenticado."
               >
+
                 <div className="settings-page__profile-header">
+
                   <span className="settings-page__profile-avatar">
-                    <UserRound size={25} />
+
+                    {initials(userName) || (
+                      <UserRound size={25} />
+                    )}
+
                   </span>
 
                   <div>
-                    <h2>{display(user?.name)}</h2>
+
+                    <h2>{display(userName)}</h2>
+
                     <p>{display(user?.email)}</p>
+
                   </div>
+
                 </div>
 
                 <dl className="settings-page__profile">
+
                   <div>
                     <dt>Usuário</dt>
-                    <dd>{display(user?.name)}</dd>
+                    <dd>{display(userName)}</dd>
                   </div>
 
                   <div>
@@ -145,12 +224,15 @@ export default function Configuracoes({
 
                   <div>
                     <dt>Perfil de acesso</dt>
+
                     <dd>
                       {PROFILE_LABELS[profile] ||
                         display(profile)}
                     </dd>
                   </div>
+
                 </dl>
+
               </Card>
 
               <OrganizationForm
@@ -163,23 +245,83 @@ export default function Configuracoes({
                 organization={organization}
                 onSave={onSaveOrganization}
               />
+
             </>
           )}
 
-          {section === "limits" && (
+          {/* USUÁRIOS E PERMISSÕES */}
+
+          {currentSection === "users" &&
+            canAdminister && (
+
+              <div className="settings-page__users admin-page">
+
+                <div
+                  className="settings-page__notice settings-visual__notice"
+                  role="note"
+                >
+
+                  <Info
+                    size={22}
+                    aria-hidden="true"
+                  />
+
+                  <div>
+
+                    <strong>
+                      Gerenciamento de usuários e permissões
+                    </strong>
+
+                    <p>
+                      Cadastre usuários, consulte os perfis
+                      disponíveis e gerencie as permissões
+                      de acesso à plataforma.
+                    </p>
+
+                  </div>
+
+                </div>
+
+                <AdminRecords
+                  key={`settings-users:${user.id}`}
+                  kind="usuarios"
+                  busy={busy}
+                  onBusy={setBusy}
+                  actorId={user.id}
+                />
+
+              </div>
+
+            )}
+
+          {/* LIMITES DE MONITORAMENTO */}
+
+          {currentSection === "limits" && (
             <MonitoringSettings trips={trips} />
           )}
 
-          {section === "integrations" && (
-            <IntegrationsSettings />
+          {/* INTEGRAÇÕES */}
+
+          {currentSection === "integrations" && (
+            <SessionReadingsPanel trips={trips} />
           )}
+
         </div>
+
       </div>
+
     </div>
   );
 }
 
-function OrganizationForm({ organization, onSave }) {
+// ==========================================
+// FORMULÁRIO DA ORGANIZAÇÃO
+// ==========================================
+
+function OrganizationForm({
+  organization,
+  onSave,
+}) {
   const [name, setName] = useState(
     organization?.name ?? ""
   );
@@ -216,11 +358,13 @@ function OrganizationForm({ organization, onSave }) {
         type: "success",
         message: "Informações salvas com sucesso.",
       });
+
     } catch {
       setFeedback({
         type: "error",
         message: "Não foi possível salvar as informações.",
       });
+
     } finally {
       setSaving(false);
     }
@@ -231,17 +375,40 @@ function OrganizationForm({ organization, onSave }) {
       title="Organização"
       description="Informações administrativas da organização."
     >
+
       {!canSave && (
-        <p className="settings-page__notice">
-          A edição da organização ainda não está
-          disponível. Os dados não serão enviados
-          ao backend até que a integração de
-          salvamento seja implementada.
-        </p>
+
+        <div
+          className="settings-page__notice settings-visual__notice"
+          role="note"
+        >
+
+          <Info
+            size={22}
+            aria-hidden="true"
+          />
+
+          <div>
+
+            <strong>Edição indisponível</strong>
+
+            <p>
+              A edição da organização ainda não está
+              disponível. Os dados não serão enviados
+              ao backend até que a integração de
+              salvamento seja implementada.
+            </p>
+
+          </div>
+
+        </div>
+
       )}
 
       <form onSubmit={handleSubmit}>
+
         <div className="settings-page__form-grid">
+
           <Input
             label="Nome da organização"
             name="organizationName"
@@ -278,19 +445,30 @@ function OrganizationForm({ organization, onSave }) {
             disabled={saving || !canSave}
             required
           />
+
         </div>
 
         <div className="settings-page__form-actions">
+
           <Button
             type="submit"
             disabled={!canSave || saving}
             loading={saving}
           >
+
+            <Save
+              size={16}
+              aria-hidden="true"
+            />
+
             Salvar alterações
+
           </Button>
+
         </div>
 
         {feedback && (
+
           <p
             className={`settings-page__feedback settings-page__feedback--${feedback.type}`}
             role={
@@ -299,88 +477,94 @@ function OrganizationForm({ organization, onSave }) {
                 : "status"
             }
           >
+
             {feedback.message}
+
           </p>
+
         )}
+
       </form>
+
     </Card>
   );
 }
 
+// ==========================================
+// CONFIGURAÇÕES DE MONITORAMENTO
+// ==========================================
+
 function MonitoringSettings({ trips }) {
+
   const [tripId, setTripId] = useState("");
   const [loadId, setLoadId] = useState("");
-  const [loads, setLoads] = useState([]);
-  const [configuration, setConfiguration] = useState(null);
-  const [loadingLoads, setLoadingLoads] = useState(false);
-  const [loadingConfiguration, setLoadingConfiguration] =
-    useState(false);
+
+  const cargoList = useViagemCargas(tripId);
+
+  const loads = cargoList.records;
+  const loadingLoads = cargoList.loading;
+
+  const [configuration, setConfiguration] =
+    useState(null);
+
+  const [
+    loadingConfiguration,
+    setLoadingConfiguration,
+  ] = useState(false);
+
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    let active = true;
+  // Limpar a seleção ao trocar de viagem
 
-    setLoads([]);
+  useEffect(() => {
     setLoadId("");
     setConfiguration(null);
+    setLoadingConfiguration(false);
     setError("");
-
-    if (!tripId) return;
-
-    async function fetchLoads() {
-      setLoadingLoads(true);
-
-      try {
-        const data = await listarCargas(tripId);
-
-        if (active) {
-          setLoads(Array.isArray(data) ? data : []);
-        }
-      } catch {
-        if (active) {
-          setError(
-            "Não foi possível consultar as cargas da viagem."
-          );
-        }
-      } finally {
-        if (active) setLoadingLoads(false);
-      }
-    }
-
-    fetchLoads();
-
-    return () => {
-      active = false;
-    };
   }, [tripId]);
 
+  // Consultar configuração da carga
+
   useEffect(() => {
+
     let active = true;
 
     setConfiguration(null);
     setError("");
 
-    if (!loadId) return;
+    if (!loadId) {
+      setLoadingConfiguration(false);
+      return;
+    }
 
     async function fetchConfiguration() {
+
       setLoadingConfiguration(true);
 
       try {
-        const data = await obterMonitoramentoCarga(loadId);
+
+        const data = await obterMonitoramentoCarga(
+          loadId
+        );
 
         if (active) {
           setConfiguration(data);
         }
+
       } catch {
+
         if (active) {
           setError(
             "Não foi possível consultar a configuração da carga."
           );
         }
+
       } finally {
+
         if (active) {
           setLoadingConfiguration(false);
         }
+
       }
     }
 
@@ -389,15 +573,24 @@ function MonitoringSettings({ trips }) {
     return () => {
       active = false;
     };
+
   }, [loadId]);
 
   return (
+
     <Card
       title="Configurações de monitoramento"
       description="Consulte as configurações registradas para cada carga."
     >
+
+      {/* SELETORES */}
+
       <div className="settings-page__selectors">
+
+        {/* VIAGEM */}
+
         <div className="settings-page__field">
+
           <label htmlFor="settings-trip">
             Viagem
           </label>
@@ -405,26 +598,39 @@ function MonitoringSettings({ trips }) {
           <select
             id="settings-trip"
             value={tripId}
-            onChange={(event) =>
-              setTripId(event.target.value)
-            }
+            onChange={(event) => {
+              setLoadId("");
+              setConfiguration(null);
+              setTripId(event.target.value);
+            }}
           >
+
             <option value="">
               Selecione uma viagem
             </option>
 
             {trips.map((trip) => (
+
               <option
                 key={trip.id}
                 value={String(trip.id)}
               >
-                {trip.code || trip.id}
+
+                {trip.code ||
+                  `#${String(trip.id).slice(0, 8)}`}
+
               </option>
+
             ))}
+
           </select>
+
         </div>
 
+        {/* CARGA */}
+
         <div className="settings-page__field">
+
           <label htmlFor="settings-load">
             Carga
           </label>
@@ -437,249 +643,163 @@ function MonitoringSettings({ trips }) {
             }
             disabled={!tripId || loadingLoads}
           >
+
             <option value="">
               Selecione uma carga
             </option>
 
             {loads.map((load) => (
+
               <option
                 key={load.id}
                 value={String(load.id)}
               >
-                {load.code || load.id}
+
+                {load.code ||
+                  load.identificacao ||
+                  `#${String(load.id).slice(0, 8)}`}
+
               </option>
+
             ))}
+
           </select>
+
         </div>
+
       </div>
 
-      {(loadingLoads || loadingConfiguration) && (
-        <LoadingState message="Consultando configurações..." />
+      {/* PAGINAÇÃO E ATUALIZAÇÃO */}
+
+      {tripId && (
+
+        <ListProgress
+          list={cargoList}
+          label="cargas das configurações"
+        />
+
       )}
 
+      {/* CARREGAMENTO */}
+
+      {(loadingLoads || loadingConfiguration) && (
+
+        <LoadingState
+          message="Consultando configurações..."
+        />
+
+      )}
+
+      {/* ERRO */}
+
       {error && (
+
         <p
           className="settings-page__feedback settings-page__feedback--error"
           role="alert"
         >
+
           {error}
+
         </p>
+
       )}
 
+      {/* NENHUMA VIAGEM SELECIONADA */}
+
       {!tripId && !loadingLoads && (
+
         <EmptyState
           title="Selecione uma viagem"
           description="Escolha uma viagem para consultar suas cargas e configurações."
         />
+
       )}
+
+      {/* NENHUMA CARGA ENCONTRADA */}
 
       {tripId &&
         !loadingLoads &&
         loads.length === 0 &&
-        !error && (
+        !error &&
+        !cargoList.error && (
+
           <EmptyState
             title="Nenhuma carga encontrada"
             description="Esta viagem não possui cargas disponíveis."
           />
+
         )}
+
+      {/* NENHUMA CARGA SELECIONADA */}
 
       {tripId &&
         loads.length > 0 &&
         !loadId &&
         !loadingLoads && (
+
           <EmptyState
             title="Selecione uma carga"
             description="Escolha uma carga para visualizar suas configurações."
           />
+
         )}
+
+      {/* CONFIGURAÇÃO NÃO ENCONTRADA */}
 
       {loadId &&
         !loadingConfiguration &&
         !configuration &&
-        !error && (
+        !error &&
+        !cargoList.error && (
+
           <EmptyState
             title="Configuração não encontrada"
             description="Não há configuração de monitoramento registrada para esta carga."
           />
+
         )}
 
+      {/* DECLARAÇÃO DA CARGA */}
+
       {configuration && !loadingConfiguration && (
+
         <>
-          <dl className="settings-page__profile">
-            <div>
-              <dt>Pré-resfriamento</dt>
-              <dd>
-                {configuration.precooling === true
-                  ? "Realizado"
-                  : configuration.precooling === false
-                    ? "Não realizado"
-                    : "Não informado"}
-              </dd>
-            </div>
+
+          <CargoDeclaration
+            declaration={configuration}
+          />
+
+          <div
+            className="settings-page__notice settings-visual__notice"
+            role="note"
+          >
+
+            <Info
+              size={22}
+              aria-hidden="true"
+            />
 
             <div>
-              <dt>Embarque registrado</dt>
-              <dd>
-                {formatDate(
-                  configuration.boardingRecordedAt
-                )}
-              </dd>
+
+              <strong>Limites ambientais</strong>
+
+              <p>
+                Esta declaração identifica a carga.
+                Os limites ambientais são configurados
+                por sessão e não são limiares científicos
+                de risco por etileno.
+              </p>
+
             </div>
 
-            <div>
-              <dt>Intervalo de amostragem</dt>
-              <dd>
-                {configuration.samplingInterval != null
-                  ? `${configuration.samplingInterval} minutos`
-                  : "Não informado"}
-              </dd>
-            </div>
-
-            <div>
-              <dt>Orientações de conservação</dt>
-              <dd>
-                {display(
-                  configuration.conservationGuidance
-                )}
-              </dd>
-            </div>
-          </dl>
-
-          <p className="settings-page__notice">
-            Os limites de temperatura e umidade
-            ainda não estão disponíveis no
-            mapeamento atual da API. Esta consulta
-            apresenta apenas as configurações
-            efetivamente retornadas pelo serviço.
-          </p>
-        </>
-      )}
-    </Card>
-  );
-}
-
-function IntegrationsSettings() {
-  const [readings, setReadings] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [consulted, setConsulted] = useState(false);
-
-  async function checkIntegration() {
-    setLoading(true);
-    setError("");
-
-    try {
-      const data = await listarLeituras();
-
-      setReadings(Array.isArray(data) ? data : []);
-    } catch {
-      setError(
-        "Não foi possível consultar a integração ThingSpeak."
-      );
-      setReadings([]);
-    } finally {
-      setLoading(false);
-      setConsulted(true);
-    }
-  }
-
-  useEffect(() => {
-    checkIntegration();
-  }, []);
-
-  const latest = [...readings]
-    .filter((reading) => reading.timestamp)
-    .sort(
-      (a, b) =>
-        new Date(b.timestamp) -
-        new Date(a.timestamp)
-    )[0];
-
-  return (
-    <Card
-      title="Integração com sensores"
-      description="Consulta de leituras recebidas pelo backend."
-    >
-      <div className="settings-page__integration-header">
-        <div className="settings-page__integration-info">
-          <Radio size={22} />
-
-          <div>
-            <strong>ThingSpeak</strong>
-            <span>
-              Integração de dados de sensores
-            </span>
           </div>
-        </div>
 
-        <Button
-          variant="secondary"
-          onClick={checkIntegration}
-          disabled={loading}
-        >
-          <RefreshCw size={15} />
-          Atualizar
-        </Button>
-      </div>
-
-      {loading ? (
-        <LoadingState message="Consultando sensores..." />
-      ) : error ? (
-        <p
-          className="settings-page__feedback settings-page__feedback--error"
-          role="alert"
-        >
-          {error}
-        </p>
-      ) : consulted ? (
-        <>
-          <dl className="settings-page__profile">
-            <div>
-              <dt>Consulta ao backend</dt>
-              <dd>Realizada com sucesso</dd>
-            </div>
-
-            <div>
-              <dt>Registros retornados</dt>
-              <dd>{readings.length}</dd>
-            </div>
-
-            <div>
-              <dt>Última leitura retornada</dt>
-              <dd>
-                {latest
-                  ? formatDate(latest.timestamp)
-                  : "Nenhuma leitura disponível"}
-              </dd>
-            </div>
-
-            <div>
-              <dt>Temperatura</dt>
-              <dd>
-                {latest?.temperature != null
-                  ? `${latest.temperature} °C`
-                  : "Não informada"}
-              </dd>
-            </div>
-
-            <div>
-              <dt>Umidade</dt>
-              <dd>
-                {latest?.humidity != null
-                  ? `${latest.humidity} %`
-                  : "Não informada"}
-              </dd>
-            </div>
-          </dl>
-
-          <p className="settings-page__notice">
-            Uma consulta bem-sucedida confirma
-            que o backend respondeu à solicitação.
-            Isso não garante que os sensores
-            estejam conectados em tempo real.
-          </p>
         </>
-      ) : null}
+
+      )}
+
     </Card>
+
   );
 }

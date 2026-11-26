@@ -1,222 +1,330 @@
 
-import { useCallback, useEffect, useState } from "react";
-import { Navigate, Route, Routes } from "react-router-dom";
+import { lazy, Suspense } from "react";
+
+import {
+  Navigate,
+  Route,
+  Routes,
+  useLocation,
+} from "react-router-dom";
 
 import Card from "../components/UI/Card";
+import ListProgress from "../components/UI/ListProgress";
 
-import Dashboard from "../pages/Dashboard/Dashboard";
-import Viagens from "../pages/Viagens/Viagens";
-import Cargas from "../pages/Cargas/Cargas";
-import Monitoramento from "../pages/Monitoramento/Monitoramento";
-import Etileno from "../pages/Etileno/Etileno";
-import Alertas from "../pages/Alertas/Alertas";
-import Historico from "../pages/Historico/Historico";
-import ChicoSenseIA from "../pages/ChicoSenseIA/ChicoSenseIA";
-import Configuracoes from "../pages/Configuracoes/Configuracoes";
+import useIncrementalList from "../hooks/useIncrementalList";
+import { tripList } from "../services/pagedLists";
 
-import { listarViagens } from "../services/viagemService";
+// ==========================================
+// CARREGAMENTO DAS PÁGINAS
+// ==========================================
+
+const Dashboard = lazy(() =>
+  import("../pages/Dashboard/Dashboard")
+);
+
+const Viagens = lazy(() =>
+  import("../pages/Viagens/Viagens")
+);
+
+const Cargas = lazy(() =>
+  import("../pages/Cargas/Cargas")
+);
+
+const Monitoramento = lazy(() =>
+  import("../pages/Monitoramento/Monitoramento")
+);
+
+const Etileno = lazy(() =>
+  import("../pages/Etileno/Etileno")
+);
+
+const Alertas = lazy(() =>
+  import("../pages/Alertas/Alertas")
+);
+
+const Historico = lazy(() =>
+  import("../pages/Historico/Historico")
+);
+
+const ChicoSenseIA = lazy(() =>
+  import("../pages/ChicoSenseIA/ChicoSenseIA")
+);
+
+const Configuracoes = lazy(() =>
+  import("../pages/Configuracoes/Configuracoes")
+);
+
+const Frota = lazy(() =>
+  import("../pages/Frota/Frota")
+);
+
+const Administracao = lazy(() =>
+  import("../pages/Administracao/Administracao")
+);
 
 const pages = [];
+
+// ==========================================
+// PÁGINAS FUTURAS
+// ==========================================
 
 function InitialPage({ title }) {
   return (
     <div>
-      <h1 className="page-title">{title}</h1>
+      <h1 className="page-title">
+        {title}
+      </h1>
 
       <Card>
         <p className="page-placeholder">
-          O conteúdo desta página será implementado nas próximas etapas.
+          O conteúdo desta página será implementado
+          nas próximas etapas.
         </p>
       </Card>
     </div>
   );
 }
 
-function getErrorMessage(error) {
-  if (error?.response?.status === 401) {
-    return "Sua sessão expirou. Faça login novamente.";
-  }
+// ==========================================
+// ROTAS DA APLICAÇÃO
+// ==========================================
 
-  if (error?.response?.status === 403) {
-    return "Você não possui permissão para consultar as viagens.";
-  }
+export default function AppRoutes({
+  user,
+  profile,
+}) {
+  const location = useLocation();
 
-  const detail = error?.response?.data?.detail;
-
-  if (typeof detail === "string") {
-    return detail;
-  }
-
-  return (
-    error?.message ||
-    "Não foi possível carregar as viagens."
+  const list = useIncrementalList(
+    user?.id,
+    tripList
   );
-}
 
-export default function AppRoutes({ user, profile }) {
-  const [trips, setTrips] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const trips = list.records;
 
-  const reload = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+  const loading =
+    list.loading && !trips.length;
 
-    try {
-      const data = await listarViagens();
+  const error = list.error;
+  const reload = list.retry;
 
-      setTrips(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error("Erro ao carregar viagens:", err);
+  // O Dashboard possui seus próprios controles
+  // de atualização e paginação.
 
-      setError(getErrorMessage(err));
-      setTrips([]);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const currentPath =
+    location.pathname
+      .replace(/\/+$/, "")
+      .toLowerCase() || "/";
 
-  useEffect(() => {
-    reload();
-  }, [reload]);
+  const isDashboard =
+    currentPath === "/dashboard" ||
+    currentPath === "/";
 
   return (
-    <Routes>
-      {/* Rota inicial */}
-      <Route
-        path="/"
-        element={<Navigate to="/dashboard" replace />}
-      />
+    <>
+      {/* PAGINAÇÃO GLOBAL DAS DEMAIS PÁGINAS */}
 
-      {/* Dashboard */}
-      <Route
-        path="/dashboard"
-        element={
-          <Dashboard
-            user={user}
-            profile={profile}
-            trips={trips}
-            tripsLoading={loading}
-            tripsError={error}
-            onRetryTrips={reload}
-          />
-        }
-      />
-
-      {/* Viagens */}
-      <Route
-        path="/viagens"
-        element={
-          <Viagens
-            trips={trips}
-            loading={loading}
-            error={error}
-            onRetry={reload}
-          />
-        }
-      />
-
-      {/* Cargas */}
-      <Route
-        path="/cargas"
-        element={
-          <Cargas
-            trips={trips}
-            loading={loading}
-            error={error}
-            onRetry={reload}
-          />
-        }
-      />
-
-      {/* Monitoramento ambiental */}
-      <Route
-        path="/monitoramento"
-        element={
-          <Monitoramento
-            trips={trips}
-            tripsLoading={loading}
-            tripsError={error}
-            onRetryTrips={reload}
-          />
-        }
-      />
-
-      {/* Análises de Etileno */}
-      <Route
-        path="/etileno"
-        element={
-          <Etileno
-            trips={trips}
-          />
-        }
-      />
-
-      {/* Central de Alertas */}
-      <Route
-        path="/alertas"
-        element={
-          <Alertas
-            trips={trips}
-            tripsLoading={loading}
-            tripsError={error}
-            onRetryTrips={reload}
-          />
-        }
-      />
-
-      <Route
-  path="/historico"
-  element={
-    <Historico
-      trips={trips}
-      loading={loading}
-      error={error}
-      onRetry={reload}
-    />
-  }
-/>
-
-      <Route
-  path="/chicosense-ia"
-  element={
-    <ChicoSenseIA
-      trips={trips}
-      tripsLoading={loading}
-      tripsError={error}
-      onRetryTrips={reload}
-    />
-  }
-/>
-
-      {/* Configurações */}
-      <Route
-  path="/configuracoes"
-  element={
-    <Configuracoes
-      user={user}
-      profile={profile}
-      trips={trips}
-    />
-  }
-/>
-
-      {/* Páginas futuras */}
-      {pages.map(({ path, title }) => (
-        <Route
-          key={path}
-          path={path}
-          element={<InitialPage title={title} />}
+      {!isDashboard && (
+        <ListProgress
+          list={list}
+          label="viagens"
         />
-      ))}
+      )}
 
-      {/* Página não encontrada */}
-      <Route
-        path="*"
-        element={
-          <InitialPage title="Página não encontrada" />
+      <Suspense
+        fallback={
+          <p role="status">
+            Carregando página…
+          </p>
         }
-      />
-    </Routes>
+      >
+        <Routes>
+
+          {/* ROTA INICIAL */}
+
+          <Route
+            path="/"
+            element={
+              <Navigate
+                to="/dashboard"
+                replace
+              />
+            }
+          />
+
+          {/* DASHBOARD */}
+
+          <Route
+            path="/dashboard"
+            element={
+              <Dashboard
+                user={user}
+                profile={profile}
+                trips={trips}
+                tripsLoading={loading}
+                tripsError={error}
+                onRetryTrips={reload}
+                tripsList={list}
+              />
+            }
+          />
+
+          {/* VIAGENS */}
+
+          <Route
+            path="/viagens"
+            element={
+              <Viagens
+                user={user}
+                trips={trips}
+                loading={loading}
+                error={error}
+                onRetry={reload}
+              />
+            }
+          />
+
+          {/* CARGAS */}
+
+          <Route
+            path="/cargas"
+            element={
+              <Cargas
+                user={user}
+                trips={trips}
+                loading={loading}
+                error={error}
+                onRetry={reload}
+              />
+            }
+          />
+
+          {/* MONITORAMENTO */}
+
+          <Route
+            path="/monitoramento"
+            element={
+              <Monitoramento
+                user={user}
+                trips={trips}
+                tripsLoading={loading}
+                tripsError={error}
+                onRetryTrips={reload}
+              />
+            }
+          />
+
+          {/* ANÁLISES DE ETILENO */}
+
+          <Route
+            path="/etileno"
+            element={
+              <Etileno
+                user={user}
+                trips={trips}
+              />
+            }
+          />
+
+          {/* CENTRAL DE ALERTAS */}
+
+          <Route
+            path="/alertas"
+            element={
+              <Alertas
+                user={user}
+                trips={trips}
+                tripsLoading={loading}
+                tripsError={error}
+                onRetryTrips={reload}
+              />
+            }
+          />
+
+          {/* HISTÓRICO */}
+
+          <Route
+            path="/historico"
+            element={
+              <Historico
+                trips={trips}
+                loading={loading}
+                error={error}
+                onRetry={reload}
+              />
+            }
+          />
+
+          {/* CHICOSENSE IA */}
+
+          <Route
+            path="/chicosense-ia"
+            element={
+              <ChicoSenseIA
+                trips={trips}
+                tripsLoading={loading}
+                tripsError={error}
+                onRetryTrips={reload}
+              />
+            }
+          />
+
+          {/* CONFIGURAÇÕES */}
+
+          <Route
+            path="/configuracoes"
+            element={
+              <Configuracoes
+                user={user}
+                profile={profile}
+                trips={trips}
+              />
+            }
+          />
+
+          {/* FROTA */}
+
+          <Route
+            path="/frota"
+            element={
+              <Frota user={user} />
+            }
+          />
+
+          {/* ADMINISTRAÇÃO */}
+
+          <Route
+            path="/administracao"
+            element={
+              <Administracao user={user} />
+            }
+          />
+
+          {/* PÁGINAS FUTURAS */}
+
+          {pages.map(({ path, title }) => (
+            <Route
+              key={path}
+              path={path}
+              element={
+                <InitialPage title={title} />
+              }
+            />
+          ))}
+
+          {/* PÁGINA NÃO ENCONTRADA */}
+
+          <Route
+            path="*"
+            element={
+              <InitialPage
+                title="Página não encontrada"
+              />
+            }
+          />
+
+        </Routes>
+      </Suspense>
+    </>
   );
 }

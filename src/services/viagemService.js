@@ -27,7 +27,8 @@ function asList(data) {
     "dados"
   );
 
-  return Array.isArray(list) ? list : [];
+  if (!Array.isArray(list)) throw new Error("Formato de lista da API não reconhecido.");
+  return list;
 }
 
 function normalizeText(value) {
@@ -120,6 +121,8 @@ function mapVehicle(raw) {
 
 function mapViagem(raw) {
   return {
+    ...raw,
+    statusApi: raw.status,
     id: pick(raw, "id", "viagem_id"),
 
     code: pick(
@@ -191,6 +194,8 @@ function mapViagem(raw) {
 
 function mapCarga(raw) {
   return {
+    ...raw,
+    statusApi: raw.status,
     id: pick(raw, "id", "carga_id"),
 
     code: pick(
