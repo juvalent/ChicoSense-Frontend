@@ -1,7 +1,7 @@
-
 import { useEffect, useMemo, useRef, useState } from "react";
-import { X } from "lucide-react";
+import { X, Info } from "lucide-react";
 
+import "./HistoricoVisual.css";
 import HistoricoTable from "../Tables/HistoricoTable";
 import Button from "../../components/UI/Button";
 import Card from "../../components/UI/Card";
@@ -178,7 +178,7 @@ export default function Historico({
       { value: "all", label: "Todas" },
       ...values.map((value) => ({
         value,
-        label: `Transportadora ${value}`,
+        label: `Transportadora #${value.slice(0, 8)}`,
       })),
     ];
   }, [completedTrips]);
@@ -272,7 +272,7 @@ export default function Historico({
         <p className="historico-page__description">
           Consulte informações das viagens concluídas.
         </p>
-        <p>Filtros de produtos usam até 20 cargas por viagem carregada. Abra os detalhes para consultar as demais cargas. Contagens e filtros não representam totais globais.</p>
+        <div className="visual-notice"><Info size={20} /><div><strong>Sobre os resultados</strong><p>Filtros de produtos usam até 20 cargas por viagem carregada. Abra os detalhes para consultar as demais cargas. Contagens e filtros não representam totais globais.</p></div></div>
       </div>
 
       <Card title="Filtros">
@@ -324,7 +324,7 @@ export default function Historico({
       </Card>
 
       <Card
-        title={`${filteredTrips.length} viagens concluídas`}
+        title={`${filteredTrips.length} ${filteredTrips.length === 1 ? "viagem concluída" : "viagens concluídas"}`}
         description="Resultados conforme os filtros selecionados."
       >
         {busy ? (
@@ -367,7 +367,7 @@ export default function Historico({
                   role="status"
                 >
                   {filteredTrips.length} de{" "}
-                  {completedTrips.length} viagens concluídas
+                  {completedTrips.length} {completedTrips.length === 1 ? "viagem concluída" : "viagens concluídas"}
                 </p>
 
                 <HistoricoTable
