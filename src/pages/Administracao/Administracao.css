@@ -1,11 +1,814 @@
-.admin-page { display: grid; gap: 20px; }
-.admin-controls { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
-.admin-controls > * { min-width: 0; }
-.admin-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-block: 16px; }
-.admin-form { padding-block: 16px; border-block: 1px solid var(--color-border); margin-block: 16px; }
-.admin-table { overflow-x: auto; }
-.admin-table table { width: 100%; border-collapse: collapse; }
-.admin-table caption { text-align: left; padding-block: 12px; }
-.admin-table th, .admin-table td { text-align: left; padding: 12px; border-bottom: 1px solid var(--color-border); overflow-wrap: anywhere; }
-.admin-detail { border-top: 1px solid var(--color-border); padding-top: 16px; }
-@media (max-width: 700px) { .admin-controls { grid-template-columns: minmax(0, 1fr); } }
+
+/* ==========================================
+   ADMINISTRAÇÃO - ESTRUTURA DA PÁGINA
+========================================== */
+
+.admin-page {
+    display: grid;
+    gap: 24px;
+    width: 100%;
+    min-width: 0;
+}
+
+/* ==========================================
+   CABEÇALHO
+========================================== */
+
+.admin-page__header {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+}
+
+.admin-page__eyebrow {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    opacity: 0.75;
+}
+
+.admin-page .admin-page__header .page-title {
+    margin: 0;
+    font-size: 30px;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.admin-page .admin-description {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.6;
+    opacity: 0.75;
+}
+
+/* ==========================================
+   AVISO DE PRESERVAÇÃO DOS REGISTROS
+========================================== */
+
+.admin-notice {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+
+    width: 100%;
+    min-width: 0;
+    padding: 16px 20px;
+    box-sizing: border-box;
+
+    background: rgba(100, 116, 139, 0.07);
+    border: 1px solid rgba(100, 116, 139, 0.18);
+    border-radius: 12px;
+}
+
+.admin-notice__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+
+    color: #64748B;
+    background: rgba(100, 116, 139, 0.12);
+    border-radius: 10px;
+}
+
+.admin-notice__content {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-width: 0;
+}
+
+.admin-notice__content strong {
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.admin-notice__content p {
+    font-size: 13px;
+    line-height: 1.6;
+    opacity: 0.75;
+    margin: 0;
+}
+
+/* ==========================================
+   CONTROLES ADMINISTRATIVOS
+========================================== */
+
+.admin-controls {
+    display: grid;
+    grid-template-columns: repeat(
+        2,
+        minmax(0, 1fr)
+    );
+    gap: 16px;
+}
+
+.admin-controls > * {
+    min-width: 0;
+}
+
+.admin-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    margin-block: 16px;
+}
+
+/* Navegação principal */
+
+.admin-page .admin-navigation {
+    margin: 0;
+    gap: 12px;
+}
+
+/* ==========================================
+   FORMULÁRIOS
+========================================== */
+
+.admin-form {
+    padding-block: 16px;
+    border-block: 1px solid var(--color-border);
+    margin-block: 16px;
+}
+
+/* ==========================================
+   TABELAS ADMINISTRATIVAS
+========================================== */
+
+.admin-table {
+    width: 100%;
+    min-width: 0;
+    overflow-x: auto;
+}
+
+.admin-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.admin-table caption {
+    text-align: left;
+    padding-block: 12px;
+}
+
+.admin-table th,
+.admin-table td {
+    text-align: left;
+    padding: 12px;
+    border-bottom: 1px solid var(--color-border);
+    overflow-wrap: anywhere;
+}
+
+/* Alinhamento das ações dentro da tabela */
+
+.admin-table td .admin-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 0;
+}
+
+/* ==========================================
+   BOTÃO DE EDIÇÃO - CANETINHA VERDE
+========================================== */
+
+.admin-page button.admin-edit-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    min-height: 40px;
+    padding: 0;
+    flex-shrink: 0;
+
+    color: #65A30D;
+    background: rgba(132, 204, 22, 0.10);
+    border: 1px solid rgba(132, 204, 22, 0.28);
+    border-radius: 9px;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.admin-page button.admin-edit-button svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+/* Efeito ao passar o mouse */
+
+.admin-page button.admin-edit-button:not(:disabled):hover {
+    color: #4D7C0F;
+    background: rgba(132, 204, 22, 0.20);
+    border-color: #84CC16;
+    transform: translateY(-1px);
+}
+
+/* Efeito ao clicar */
+
+.admin-page button.admin-edit-button:not(:disabled):active {
+    transform: scale(0.96);
+}
+
+/* Acessibilidade */
+
+.admin-page button.admin-edit-button:focus-visible {
+    outline: 2px solid #84CC16;
+    outline-offset: 3px;
+}
+
+/* Botão desabilitado */
+
+.admin-page button.admin-edit-button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+/* ==========================================
+   DETALHES ADMINISTRATIVOS
+========================================== */
+
+.admin-detail {
+    border-top: 1px solid var(--color-border);
+    padding-top: 16px;
+}
+
+/* ==========================================
+   RESPONSIVIDADE
+========================================== */
+
+@media (max-width: 700px) {
+
+    .admin-page {
+        gap: 20px;
+    }
+
+    .admin-controls {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .admin-page .admin-page__header .page-title {
+        font-size: 25px;
+    }
+
+    .admin-page .admin-description {
+        font-size: 13px;
+    }
+
+    .admin-notice {
+        align-items: flex-start;
+        padding: 14px;
+        gap: 12px;
+    }
+
+    .admin-notice__content p {
+        font-size: 12px;
+    }
+
+    .admin-notice__icon {
+        width: 36px;
+        height: 36px;
+    }
+
+    .admin-navigation {
+        flex-wrap: wrap;
+    }
+
+    .admin-table td .admin-actions {
+        gap: 8px;
+    }
+}
+
+/* Redução de movimento por acessibilidade */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .admin-page button.admin-edit-button {
+        transition: none;
+    }
+
+    .admin-page button.admin-edit-button:not(:disabled):hover,
+    .admin-page button.admin-edit-button:not(:disabled):active {
+        transform: none;
+    }
+}
+
+/* ==========================================
+   COMPONENTE ADMINISTRATIVO COMPARTILHADO
+========================================== */
+
+.admin-records,
+.admin-records > .card__content,
+.settings-page__content {
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.admin-records .admin-table {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: auto;
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+}
+
+.admin-records .admin-table table {
+    width: 100%;
+    min-width: 580px;
+    border-collapse: collapse;
+}
+
+.admin-records .admin-table caption {
+    padding: 16px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.admin-records .admin-table th {
+    background: rgba(100, 116, 139, 0.08);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.admin-records .admin-table th,
+.admin-records .admin-table td {
+    padding: 14px 16px;
+}
+
+.admin-records .admin-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+
+/* ==========================================
+   CANETA DE EDIÇÃO
+========================================== */
+
+.admin-records button.admin-edit-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+
+    padding: 0;
+
+    color: #65a30d;
+    background: rgba(132, 204, 22, 0.10);
+
+    border: 1px solid rgba(132, 204, 22, 0.28);
+    border-radius: 9px;
+
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.admin-records button.admin-edit-button:not(:disabled):hover {
+    background: rgba(132, 204, 22, 0.22);
+    border-color: #84cc16;
+}
+
+.admin-records button.admin-edit-button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+
+/* ==========================================
+   MODAL ADMINISTRATIVO
+========================================== */
+
+.admin-modal {
+    position: fixed;
+    inset: 0;
+
+    width: min(720px, calc(100% - 32px));
+    max-width: 720px;
+    max-height: calc(100dvh - 40px);
+
+    margin: auto;
+    padding: 0;
+
+    border: 1px solid var(--color-border, #dce3eb);
+    border-radius: 18px;
+
+    background: var(--color-surface, Canvas);
+    color: var(--color-text, CanvasText);
+
+    overflow: auto;
+
+    box-shadow:
+        0 24px 80px rgba(0, 0, 0, 0.22);
+}
+
+.admin-modal[open] {
+    animation: admin-modal-in 0.22s ease-out;
+}
+
+.admin-modal::backdrop {
+    background: rgba(15, 23, 42, 0.55);
+    backdrop-filter: blur(4px);
+}
+
+body:has(.admin-modal[open]) {
+    overflow: hidden;
+}
+
+.admin-modal__container {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+
+/* ==========================================
+   CABEÇALHO DO MODAL
+========================================== */
+
+.admin-modal__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+
+    gap: 16px;
+    padding: 24px;
+
+    border-bottom: 1px solid var(--color-border);
+}
+
+.admin-modal__heading {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+}
+
+.admin-modal__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 46px;
+    height: 46px;
+    flex-shrink: 0;
+
+    background: rgba(132, 204, 22, 0.13);
+    color: #65a30d;
+
+    border-radius: 12px;
+}
+
+.admin-modal__heading h2 {
+    margin: 0 0 5px;
+    font-size: 21px;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.admin-modal__heading p {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.5;
+    opacity: 0.75;
+}
+
+.admin-modal__close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+
+    padding: 0;
+
+    background: transparent;
+    color: inherit;
+
+    border: 0;
+    border-radius: 8px;
+
+    cursor: pointer;
+}
+
+.admin-modal__close:hover {
+    background: rgba(100, 116, 139, 0.12);
+}
+
+.admin-modal__close:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+
+/* ==========================================
+   CORPO DO FORMULÁRIO
+========================================== */
+
+.admin-modal__form {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+}
+
+.admin-modal__body {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+
+    padding: 24px;
+    min-width: 0;
+}
+
+.admin-modal .admin-controls {
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: 20px;
+}
+
+.admin-modal .admin-controls > * {
+    min-width: 0;
+}
+
+.admin-modal__full {
+    grid-column: 1 / -1;
+}
+
+.admin-modal textarea {
+    width: 100%;
+    min-height: 100px;
+    box-sizing: border-box;
+    resize: vertical;
+}
+
+
+/* ==========================================
+   SITUAÇÃO DO CADASTRO
+========================================== */
+
+.admin-modal__status {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 20px;
+    padding: 16px;
+
+    background: rgba(100, 116, 139, 0.06);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+}
+
+.admin-modal__status strong {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.admin-modal__status p {
+    margin: 5px 0 0;
+    font-size: 12px;
+    opacity: 0.75;
+}
+
+
+/* ==========================================
+   SWITCH ATIVO / INATIVO
+========================================== */
+
+.admin-modal__switch {
+    position: relative;
+    display: inline-block;
+
+    width: 46px;
+    height: 26px;
+
+    flex-shrink: 0;
+    cursor: pointer;
+}
+
+.admin-modal__switch input {
+    position: absolute;
+    inset: 0;
+
+    width: 100%;
+    height: 100%;
+
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.admin-modal__switch-track {
+    position: absolute;
+    inset: 0;
+
+    background: #94a3b8;
+    border-radius: 30px;
+
+    pointer-events: none;
+    transition: background 0.2s ease;
+}
+
+.admin-modal__switch-track::before {
+    content: "";
+
+    position: absolute;
+    top: 3px;
+    left: 3px;
+
+    width: 20px;
+    height: 20px;
+
+    background: #ffffff;
+    border-radius: 50%;
+
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+    transition: transform 0.2s ease;
+}
+
+.admin-modal__switch input:checked
+    + .admin-modal__switch-track {
+    background: #84cc16;
+}
+
+.admin-modal__switch input:checked
+    + .admin-modal__switch-track::before {
+    transform: translateX(20px);
+}
+
+.admin-modal__switch input:focus-visible
+    + .admin-modal__switch-track {
+    outline: 2px solid #84cc16;
+    outline-offset: 3px;
+}
+
+.admin-modal__switch input:disabled
+    + .admin-modal__switch-track {
+    opacity: 0.5;
+}
+
+
+/* ==========================================
+   AVISOS E ERROS
+========================================== */
+
+.admin-modal__notice,
+.admin-modal__error {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+
+    padding: 14px 16px;
+
+    border-radius: 10px;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.admin-modal__notice {
+    background: rgba(100, 116, 139, 0.08);
+    border: 1px solid rgba(100, 116, 139, 0.18);
+}
+
+.admin-modal__error {
+    background: rgba(239, 68, 68, 0.09);
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    color: #dc2626;
+}
+
+.admin-modal__notice p,
+.admin-modal__error p {
+    margin: 0;
+}
+
+.admin-modal__notice svg,
+.admin-modal__error svg {
+    flex-shrink: 0;
+}
+
+
+/* ==========================================
+   RODAPÉ DO MODAL
+========================================== */
+
+.admin-modal__footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+
+    gap: 12px;
+    padding: 20px 24px;
+
+    border-top: 1px solid var(--color-border);
+}
+
+.admin-modal__footer button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+
+/* ==========================================
+   ANIMAÇÃO
+========================================== */
+
+@keyframes admin-modal-in {
+    from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+
+/* ==========================================
+   RESPONSIVIDADE
+========================================== */
+
+@media (max-width: 600px) {
+
+    .admin-modal {
+        width: calc(100% - 24px);
+        max-height: calc(100dvh - 24px);
+        border-radius: 14px;
+    }
+
+    .admin-modal__header,
+    .admin-modal__body,
+    .admin-modal__footer {
+        padding: 18px;
+    }
+
+    .admin-modal .admin-controls {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 16px;
+    }
+
+    .admin-modal__heading h2 {
+        font-size: 18px;
+    }
+
+    .admin-modal__heading p {
+        font-size: 12px;
+    }
+
+    .admin-modal__icon {
+        width: 38px;
+        height: 38px;
+    }
+
+    .admin-modal__footer {
+        flex-wrap: wrap;
+    }
+
+    .admin-modal__footer button {
+        flex: 1;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .admin-modal[open] {
+        animation: none;
+    }
+
+    .admin-modal__switch-track,
+    .admin-modal__switch-track::before {
+        transition: none;
+    }
+}

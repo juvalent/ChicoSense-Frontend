@@ -1,0 +1,96 @@
+.logo-intro {
+    position: relative;
+    display: inline-block;
+    width: 250px;
+    max-width: 100%;
+}
+
+.logo-intro__img {
+    display: block;
+    width: 100%;
+    height: auto;
+
+    opacity: 0;
+
+    animation: logo-intro-in 1.6s
+        cubic-bezier(0.22, 0.61, 0.36, 1)
+        0.3s forwards;
+}
+
+
+/* EFEITO DE BRILHO */
+
+.logo-intro__shine {
+    position: absolute;
+    inset: 0;
+
+    pointer-events: none;
+    opacity: 0;
+
+    -webkit-mask: var(--logo-url) center / contain no-repeat;
+    mask: var(--logo-url) center / contain no-repeat;
+
+    background: linear-gradient(
+        110deg,
+        transparent 35%,
+        rgba(255, 255, 255, 0.95) 50%,
+        transparent 65%
+    );
+
+    background-size: 250% 100%;
+    background-position: 150% 0;
+
+    animation: logo-intro-shine 1.2s
+        ease-in-out 1.9s forwards;
+}
+
+
+/* ANIMAÇÃO DE ENTRADA */
+
+@keyframes logo-intro-in {
+    from {
+        opacity: 0;
+        transform: scale(0.96);
+        filter: blur(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+        filter: blur(0);
+    }
+}
+
+
+/* ANIMAÇÃO DO BRILHO */
+
+@keyframes logo-intro-shine {
+    0% {
+        opacity: 1;
+        background-position: 150% 0;
+    }
+
+    90% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+        background-position: -50% 0;
+    }
+}
+
+
+/* ACESSIBILIDADE */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .logo-intro__img {
+        animation: none;
+        opacity: 1;
+    }
+
+    .logo-intro__shine {
+        display: none;
+    }
+}
