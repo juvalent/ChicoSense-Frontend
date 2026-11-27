@@ -31,6 +31,17 @@ export default function App() {
 
   const system = useSystemStatus();
 
+  // Revalidate the current identity after editing the administrator's own account.
+  // The event never supplies a role or user object; only /auth/me can update them.
+  useEffect(() => {
+    function refreshIdentity() {
+      if (!getSessionToken()) return;
+      setRestoreError(""); setRestoring(true); setRestoreAttempt((attempt) => attempt + 1);
+    }
+    window.addEventListener("auth:refresh", refreshIdentity);
+    return () => window.removeEventListener("auth:refresh", refreshIdentity);
+  }, []);
+
   useEffect(() => {
     const token = getSessionToken();
     if (!token) return;

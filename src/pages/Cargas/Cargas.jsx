@@ -1,209 +1,281 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { Info, RefreshCw } from "lucide-react";
 
-import CargaDetalhes from "../../components/Cards/CargaDetalhes";
-import ViagemCargasTable from "../../components/Tables/ViagemCargasTable";
-import Card from "../../components/UI/Card";
-import EmptyState from "../../components/UI/EmptyState";
-import ErrorState from "../../components/UI/ErrorState";
-import Input from "../../components/UI/Input";
-import LoadingState from "../../components/UI/LoadingState";
 import Select from "../../components/UI/Select";
-import useCargaMonitoramento from "../../hooks/useCargaMonitoramento";
-import useViagemCargas from "../../hooks/useViagemCargas";
+import Card from "../../components/UI/Card";
+import Button from "../../components/UI/Button";
 
-const statusLabels = {
-  in_transit: "Em trânsito",
-  scheduled: "Programada",
-  completed: "Concluída",
-};
+import LogisticsRecords from "../../components/Logistics/LogisticsRecords";
+import TripOperations from "../../components/Logistics/TripOperations";
 
-function normalizeSearch(value) {
-  return String(value ?? "")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .trim();
-}
+import {
+  logisticsError,
+  readTrip,
+} from "../../services/logisticsService";
+
+import "../../components/Logistics/Logistics.css";
 
 export default function Cargas({
   trips = [],
-  loading = false,
+  loading,
   error,
   onRetry,
+  user,
 }) {
   const location = useLocation();
   const navigate = useNavigate();
-  const detailsRef = useRef(null);
 
   const [tripId, setTripId] = useState(
-    location.state?.tripId != null ? String(location.state.tripId) : ""
-  );
-  const [loadId, setLoadId] = useState(
-    location.state?.loadId != null ? String(location.state.loadId) : ""
-  );
-  const [search, setSearch] = useState("");
-
-  // Seleciona a primeira viagem quando a lista chega
-  useEffect(() => {
-    if (trips.length === 0) return;
-
-    const exists = trips.some((trip) => String(trip.id) === tripId);
-
-    if (!exists) {
-      setTripId(String(trips[0].id));
-      setLoadId("");
-    }
-  }, [trips, tripId]);
-
-  const selectedTrip = trips.find((trip) => String(trip.id) === tripId);
-
-  const cargas = useViagemCargas(selectedTrip?.id);
-
-  const query = normalizeSearch(search);
-
-  const filteredLoads = cargas.loads.filter((load) =>
-    [load.code, load.variety, load.harvestLot].some((value) =>
-      normalizeSearch(value).includes(query)
-    )
+    location.state?.tripId ?? null
   );
 
-  const selectedLoad = cargas.loads.find(
-    (load) => String(load.id) === loadId
-  );
+  const [busy, setBusy] = useState(false);
 
-  const monitoramento = useCargaMonitoramento(selectedLoad?.id);
-
-  useEffect(() => {
-    if (!selectedLoad || !detailsRef.current) return;
-
-    const reduceMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)"
-    ).matches;
-
-    detailsRef.current.scrollIntoView({
-      behavior: reduceMotion ? "auto" : "smooth",
-      block: "start",
-    });
-  }, [loadId]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  function handleTripChange(event) {
-    setTripId(event.target.value);
-    setLoadId("");
-    setSearch("");
-  }
-
-  function handleOpenLoad(load) {
-    setLoadId((current) =>
-      current === String(load.id) ? "" : String(load.id)
-    );
-  }
-
-  const tripOptions = trips.map((trip) => ({
-    value: String(trip.id),
-    label: `${trip.code || trip.id} · ${trip.origin || "—"} → ${
-      trip.destination || "—"
-    } · ${statusLabels[trip.status] || "Situação não informada"}`,
-  }));
-
-  const controlsDisabled = loading || Boolean(error) || trips.length === 0;
+  const selected =
+    tripId === null
+      ? trips[0]
+      : trips.find((trip) => trip.id === tripId);
 
   return (
-    <div className="cargas-page">
-      <div className="cargas-page__heading">
-        <span className="cargas-page__eyebrow">
-          Hierarquia viagem → carga → caixa
-        </span>
+    <div className="logistics-page">
 
-        <h1 className="page-title">Cargas de Manga</h1>
+      {/* CABEÇALHO */}
 
-        <p className="cargas-page__description">
-          Selecione uma viagem para listar suas cargas e inspecionar
-          caixas e sessões vinculadas.
-        </p>
+      <div className="logistics-page-heading">
+        <h1 className="page-title">
+          Cargas de Manga
+        </h1>
       </div>
 
-      <Card
-        title="Viagem selecionada"
-        description="As cargas pertencem sempre a uma viagem."
-      >
-        <div className="cargas-page__filters">
-          <Select
-            label="Viagem"
-            name="tripId"
-            value={tripId}
-            onChange={handleTripChange}
-            disabled={controlsDisabled}
-            placeholder="Selecione uma viagem"
-            options={tripOptions}
-          />
+      {/* AVISO INFORMATIVO */}
 
-          <Input
-            label="Buscar carga na viagem"
-            name="loadSearch"
-            type="search"
-            placeholder="Carga, variedade de manga ou lote"
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            disabled={controlsDisabled || !selectedTrip}
-          />
+      <div className="logistics-notice">
+        <div className="logistics-notice__icon">
+          <Info size={20} />
         </div>
 
-        {loading ? (
-          <LoadingState message="Carregando viagens…" />
-        ) : error ? (
-          <ErrorState message={error} onRetry={onRetry} />
-        ) : trips.length === 0 ? (
-          <EmptyState
-            title="Nenhuma viagem cadastrada"
-            description="Cadastre uma viagem para listar as cargas dela."
-          />
-        ) : cargas.loading ? (
-          <LoadingState message="Carregando cargas…" />
-        ) : cargas.error ? (
-          <ErrorState message={cargas.error} onRetry={cargas.retry} />
-        ) : cargas.loads.length === 0 ? (
-          <EmptyState
-            title="Nenhuma carga nesta viagem"
-            description="As cargas aparecerão aqui quando forem vinculadas à viagem."
-          />
-        ) : filteredLoads.length === 0 ? (
-          <EmptyState
-            title="Nenhuma carga encontrada"
-            description="Altere o texto da busca para consultar outros resultados."
-          />
-        ) : (
-          <>
-            <p className="cargas-page__results" role="status">
-              {filteredLoads.length} de {cargas.loads.length} cargas
-            </p>
+        <div className="logistics-notice__content">
+          <strong>Gerenciamento de cargas</strong>
 
-            <ViagemCargasTable
-              loads={filteredLoads}
-              selectedLoadId={loadId}
-              onOpenLoad={handleOpenLoad}
+          <p>
+            Organize viagens, cargas e caixas. Os estados
+            são atualizados separadamente, preservando
+            o histórico das operações.
+          </p>
+        </div>
+      </div>
+
+      {/* VIAGEM SELECIONADA */}
+
+      <Card>
+        <div className="logistics-section-header">
+          <div>
+            <h2>Viagem selecionada</h2>
+
+            <p>
+              Selecione uma viagem para consultar
+              suas cargas e informações operacionais.
+            </p>
+          </div>
+
+          <Button
+            variant="secondary"
+            disabled={busy || loading || !onRetry}
+            onClick={onRetry}
+          >
+            <RefreshCw
+              size={16}
+              className={
+                loading ? "logistics-spin" : ""
+              }
             />
-          </>
+
+            {loading
+              ? "Atualizando..."
+              : "Atualizar viagens"}
+          </Button>
+        </div>
+
+        <Select
+          label="Viagem das cargas"
+          value={selected?.id || ""}
+          disabled={busy || loading || Boolean(error)}
+          options={[
+            {
+              value: "",
+              label: "Selecione uma viagem",
+            },
+            ...trips.map((trip) => ({
+              value: trip.id,
+              label: `${
+                trip.code || `#${String(trip.id).slice(0, 8)}`
+              } · ${trip.origin || ""} → ${
+                trip.destination || ""
+              }`,
+            })),
+          ]}
+          onChange={(event) =>
+            setTripId(event.target.value)
+          }
+        />
+
+        {loading && (
+          <p role="status">
+            Carregando viagens…
+          </p>
+        )}
+
+        {error && (
+          <p role="alert">{error}</p>
+        )}
+
+        {!loading && !error && !trips.length && (
+          <p>
+            Nenhuma viagem disponível para este usuário.
+          </p>
         )}
       </Card>
 
-      {selectedLoad && (
-        <div ref={detailsRef} className="cargas-page__details">
-          <CargaDetalhes
-            load={selectedLoad}
-            trip={selectedTrip}
-            monitoring={monitoramento.data}
-            loading={monitoramento.loading}
-            error={monitoramento.error}
-            onRetry={monitoramento.retry}
-            onOpenMonitoring={(load) =>
-              navigate("/monitoramento", {
-                state: { tripId: selectedTrip?.id, loadId: load.id },
-              })
-            }
-          />
-        </div>
+      {/* OPERAÇÃO E CARGAS */}
+
+      {selected && !loading && !error && (
+        <CargoWorkspace
+          key={selected.id}
+          user={user}
+          id={selected.id}
+          busy={busy}
+          onBusy={setBusy}
+          onTripSaved={onRetry}
+          initialCargoId={
+            location.state?.tripId === selected.id
+              ? location.state?.loadId
+              : undefined
+          }
+          onMonitor={(cargoId) =>
+            navigate("/monitoramento", {
+              state: {
+                tripId: selected.id,
+                loadId: cargoId,
+              },
+            })
+          }
+        />
       )}
     </div>
+  );
+}
+
+// ==========================================
+// OPERAÇÕES DA VIAGEM
+// ==========================================
+
+function CargoWorkspace({
+  id,
+  user,
+  busy,
+  onBusy,
+  initialCargoId,
+  onTripSaved,
+  onMonitor,
+}) {
+  const [view, setView] = useState({
+    trip: null,
+    loading: true,
+    error: "",
+  });
+
+  const [retry, setRetry] = useState(0);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function load() {
+      setView({
+        trip: null,
+        loading: true,
+        error: "",
+      });
+
+      try {
+        const trip = await readTrip(
+          id,
+          controller.signal
+        );
+
+        if (!controller.signal.aborted) {
+          setView({
+            trip,
+            loading: false,
+            error: "",
+          });
+        }
+      } catch (error) {
+        if (!controller.signal.aborted) {
+          setView({
+            trip: null,
+            loading: false,
+            error: logisticsError(error),
+          });
+        }
+      }
+    }
+
+    load();
+
+    return () => controller.abort();
+  }, [id, retry]);
+
+  if (view.loading) {
+    return (
+      <p role="status">
+        Consultando viagem…
+      </p>
+    );
+  }
+
+  if (view.error) {
+    return (
+      <Card>
+        <p role="alert">{view.error}</p>
+
+        <Button
+          onClick={() => setRetry((n) => n + 1)}
+        >
+          Tentar novamente
+        </Button>
+      </Card>
+    );
+  }
+
+  return (
+    <>
+      <TripOperations
+        user={user}
+        trip={view.trip}
+        busy={busy}
+        onBusy={onBusy}
+        onSaved={(trip) => {
+          setView({
+            trip,
+            loading: false,
+            error: "",
+          });
+
+          onTripSaved?.();
+        }}
+      />
+
+      <LogisticsRecords
+        kind="cargas"
+        parentId={id}
+        trip={view.trip}
+        user={user}
+        busy={busy}
+        onBusy={onBusy}
+        initialCargoId={initialCargoId}
+        onMonitor={onMonitor}
+      />
+    </>
   );
 }

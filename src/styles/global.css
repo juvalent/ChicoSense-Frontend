@@ -4745,3 +4745,1781 @@ body {
   }
 }
 
+.session-readings .monitoramento-filtros {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
+  gap: 16px;
+  align-items: end;
+}
+
+.session-readings label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.session-readings select {
+  width: 100%;
+  min-width: 0;
+}
+
+.session-readings nav .button {
+  margin: 4px 8px 4px 0;
+}
+
+@media (max-width: 760px) {
+  .session-readings .monitoramento-filtros {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+
+/* ==========================================
+   CORREÇÕES VISUAIS - INTEGRAÇÃO OPERACIONAL
+   ========================================== */
+
+/* DASHBOARD */
+
+.dashboard {
+  min-width: 0;
+  width: 100%;
+}
+
+.dashboard__toolbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.dashboard__toolbar .dashboard__heading {
+  flex: 1;
+  min-width: 0;
+}
+
+.dashboard__toolbar > .button,
+.dashboard__iot-heading > .button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: auto;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* MONITORAMENTO IOT */
+
+.dashboard__iot {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  min-width: 0;
+}
+
+.dashboard__iot-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.dashboard__iot-heading h2 {
+  margin: 0 0 6px;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.dashboard__iot-heading p {
+  margin: 0;
+  color: var(--color-text-muted, #718096);
+  font-size: 14px;
+}
+
+.dashboard__sensor-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.dashboard__sensor-info {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-text-muted, #718096);
+}
+
+.climate-chart {
+  width: 100%;
+  height: 340px;
+  min-width: 0;
+  min-height: 260px;
+}
+
+/* LEITURAS POR SESSÃO */
+
+.session-readings {
+  min-width: 0;
+}
+
+.session-readings .monitoramento-filtros {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr)
+    minmax(0, 1fr)
+    auto;
+  gap: 16px;
+  align-items: end;
+  margin-bottom: 20px;
+}
+
+.session-readings label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.session-readings select {
+  appearance: none;
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 10px 36px 10px 14px;
+  border: 1px solid var(--color-border, #dce2ea);
+  border-radius: 10px;
+  background-color: var(--color-surface, #ffffff);
+  color: var(--color-text, #2d3748);
+  font-family: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23718096' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+}
+
+.session-readings select:focus {
+  outline: 2px solid #cbf51d;
+  outline-offset: 2px;
+}
+
+.session-readings select:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.session-readings .monitoramento-filtros > .button {
+  width: auto;
+  min-height: 44px;
+  white-space: nowrap;
+}
+
+.session-readings p {
+  line-height: 1.6;
+}
+
+.session-readings nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.session-readings nav p {
+  flex-basis: 100%;
+}
+
+.session-readings nav .button {
+  width: auto;
+  margin: 0;
+}
+
+/* TABELA DE VIAGENS */
+
+.transit-table__scroll {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--color-border, #dce2ea);
+  border-radius: 12px;
+}
+
+.transit-table {
+  width: 100%;
+  min-width: 900px;
+  border-collapse: collapse;
+  table-layout: auto;
+  font-size: 13px;
+}
+
+.transit-table__caption {
+  text-align: left;
+  padding: 16px;
+  font-size: 13px;
+  color: var(--color-text-muted, #718096);
+}
+
+.transit-table thead th {
+  padding: 14px 16px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  background: var(--color-background, #eff2f5);
+  border-bottom: 1px solid var(--color-border, #dce2ea);
+}
+
+.transit-table tbody th,
+.transit-table tbody td {
+  padding: 16px;
+  text-align: left;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--color-border, #dce2ea);
+}
+
+.transit-table tbody tr:last-child th,
+.transit-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.transit-table tbody th {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.transit-table__dates {
+  white-space: nowrap;
+}
+
+.transit-table__status {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 20px;
+  background: rgba(203, 245, 29, 0.18);
+  color: var(--color-text, #2d3748);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.transit-table__action {
+  width: auto;
+  min-width: 110px;
+  white-space: nowrap;
+  font-size: 12px;
+}
+
+/* RESPONSIVIDADE */
+
+@media (max-width: 900px) {
+  .session-readings .monitoramento-filtros {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .session-readings .monitoramento-filtros > .button {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+
+  .climate-chart {
+    height: 300px;
+  }
+}
+
+@media (max-width: 600px) {
+  .dashboard__toolbar,
+  .dashboard__iot-heading {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .dashboard__toolbar > .button,
+  .dashboard__iot-heading > .button {
+    width: 100%;
+  }
+
+  .dashboard__sensor-grid,
+  .session-readings .monitoramento-filtros {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .session-readings .monitoramento-filtros > .button {
+    width: 100%;
+  }
+
+  .climate-chart {
+    height: 280px;
+  }
+
+  .transit-table {
+    min-width: 850px;
+  }
+}
+
+/* ==========================================
+   DASHBOARD - CABEÇALHOS E AVISOS
+   ========================================== */
+
+.dashboard__title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  width: 100%;
+  margin: 8px 0;
+}
+
+.dashboard__title-row .dashboard__title {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+}
+
+.dashboard__title-row > .button,
+.dashboard__section-header > .button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: auto;
+  min-height: 40px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* CABEÇALHO DA SEÇÃO DE VIAGENS */
+
+.dashboard__section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.dashboard__section-header > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.dashboard__section-title {
+  margin: 0 0 6px;
+  font-size: 18px;
+  font-weight: 600;
+  color: inherit;
+}
+
+.dashboard__section-description {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--color-text-muted, #718096);
+}
+
+/* AVISO INFORMATIVO */
+
+.dashboard__notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+
+  padding: 14px 16px;
+  margin-bottom: 20px;
+
+  border: 1px solid rgba(100, 130, 170, 0.22);
+  border-left: 3px solid #6482aa;
+  border-radius: 8px;
+
+  background: rgba(100, 130, 170, 0.08);
+  color: inherit;
+}
+
+.dashboard__notice-icon {
+  flex-shrink: 0;
+  color: #6482aa;
+  margin-top: 2px;
+}
+
+.dashboard__notice-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.dashboard__notice-content strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.dashboard__notice-content p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--color-text-muted, #718096);
+}
+
+/* RESPONSIVIDADE */
+
+@media (max-width: 900px) {
+  .dashboard__title-row,
+  .dashboard__section-header {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 600px) {
+  .dashboard__title-row,
+  .dashboard__section-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .dashboard__title-row > .button,
+  .dashboard__section-header > .button {
+    width: 100%;
+  }
+
+  .dashboard__notice {
+    padding: 12px;
+    gap: 10px;
+  }
+}
+
+
+/* ==========================================
+   DASHBOARD - LEITURAS POR SESSÃO
+========================================== */
+
+.dashboard .session-readings {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+/* Organização dos filtros */
+
+.dashboard .session-readings .monitoramento-filtros {
+    display: grid;
+    grid-template-columns:
+        minmax(0, 1fr)
+        minmax(0, 1fr);
+    align-items: end;
+    gap: 16px;
+    width: 100%;
+    margin: 24px 0 20px;
+}
+
+.dashboard .session-readings .monitoramento-filtros > * {
+    min-width: 0;
+}
+
+/* Labels */
+
+.dashboard .session-readings .monitoramento-filtros label {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    min-width: 0;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* Campos de seleção */
+
+.dashboard .session-readings .monitoramento-filtros select {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    height: 44px;
+    padding: 0 14px;
+    border-radius: 10px;
+    box-sizing: border-box;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    font-size: 14px;
+}
+
+/* Botão atualizar leituras */
+
+.dashboard .session-readings .monitoramento-filtros > button {
+    grid-column: 1 / -1;
+    justify-self: end;
+    width: auto;
+    min-height: 44px;
+    padding: 10px 18px;
+    white-space: nowrap;
+}
+
+/* ==========================================
+   AVISO DE REGISTROS CARREGADOS
+========================================== */
+
+.dashboard .session-readings .logistics-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+
+    width: 100%;
+    box-sizing: border-box;
+
+    margin: 16px 0 20px;
+    padding: 14px 16px;
+
+    background: rgba(100, 116, 139, 0.07);
+    border: 1px solid rgba(100, 116, 139, 0.18);
+    border-radius: 10px;
+}
+
+.dashboard .session-readings .logistics-actions > span {
+    flex: 1 1 260px;
+    min-width: 0;
+    font-size: 13px;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
+
+.dashboard .session-readings .logistics-actions > button {
+    flex: 0 0 auto;
+    width: auto;
+    min-height: 40px;
+    padding: 8px 14px;
+    font-size: 13px;
+    white-space: normal;
+}
+
+/* ==========================================
+   VIAGENS EM TRÂNSITO
+========================================== */
+
+.dashboard .dashboard__section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    width: 100%;
+    gap: 20px;
+    margin-bottom: 20px;
+    box-sizing: border-box;
+}
+
+.dashboard .dashboard__section-header > div:first-child {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+/* Alinhamento dos botões à direita */
+
+.dashboard .dashboard__section-header
+.dashboard__trip-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+
+    flex: 0 0 auto;
+    width: auto;
+    margin-left: auto;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.dashboard .dashboard__trip-actions > button,
+.dashboard .dashboard__section-header > button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    flex: 0 0 auto;
+    width: auto;
+    min-height: 44px;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+/* ==========================================
+   RESPONSIVIDADE
+========================================== */
+
+@media (max-width: 768px) {
+
+    .dashboard .session-readings .monitoramento-filtros {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 14px;
+    }
+
+    .dashboard .session-readings
+    .monitoramento-filtros > button {
+        width: 100%;
+    }
+
+    .dashboard .session-readings .logistics-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .dashboard .session-readings .logistics-actions > span {
+        flex: 0 0 auto;
+    }
+
+    .dashboard .session-readings .logistics-actions > button {
+        width: 100%;
+    }
+
+    .dashboard .dashboard__section-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 14px;
+    }
+
+    .dashboard .dashboard__section-header
+    .dashboard__trip-actions {
+        width: 100%;
+        margin-left: 0;
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .dashboard .dashboard__trip-actions > button,
+    .dashboard .dashboard__section-header > button {
+        width: 100%;
+    }
+}
+
+
+/* ==========================================
+   DASHBOARD - IDENTIFICAÇÃO DA SESSÃO
+========================================== */
+
+.dashboard .session-readings__details {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin: 28px 0 24px;
+    min-width: 0;
+}
+
+/* Identificação superior */
+
+.dashboard .session-readings__eyebrow {
+    color: #8491A3;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+}
+
+.dashboard .session-readings__heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+/* Título principal */
+
+.dashboard .session-readings__title {
+    color: #65A30D;
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.3;
+    margin: 0;
+    letter-spacing: -0.5px;
+}
+
+/* Status da sessão */
+
+.dashboard .session-readings__badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 8px 14px;
+    border-radius: 30px;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.dashboard .session-readings__badge--active {
+    background: rgba(101, 163, 13, 0.12);
+    color: #65A30D;
+    border: 1px solid rgba(101, 163, 13, 0.2);
+}
+
+.dashboard .session-readings__badge--neutral {
+    background: rgba(100, 116, 139, 0.1);
+    color: inherit;
+    border: 1px solid rgba(100, 116, 139, 0.2);
+}
+
+/* Informações individuais */
+
+.dashboard .session-readings__metadata {
+    display: grid;
+    grid-template-columns:
+        minmax(0, 1.5fr)
+        minmax(0, 1fr)
+        minmax(0, 1fr);
+    gap: 16px;
+}
+
+.dashboard .session-readings__metadata-item {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+    padding: 16px;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    background: rgba(148, 163, 184, 0.04);
+    border-radius: 12px;
+}
+
+.dashboard .session-readings__metadata-label {
+    color: inherit;
+    opacity: 0.7;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.dashboard .session-readings__metadata-value {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.5;
+    min-width: 0;
+}
+
+.dashboard .session-readings__metadata-value svg {
+    flex-shrink: 0;
+    color: #65A30D;
+}
+
+.dashboard .session-readings__metadata-value span {
+    overflow-wrap: anywhere;
+}
+
+/* Aviso informativo */
+
+.dashboard .session-readings__notice {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    background: rgba(100, 116, 139, 0.07);
+    border: 1px solid rgba(100, 116, 139, 0.16);
+    border-radius: 10px;
+}
+
+.dashboard .session-readings__notice svg {
+    flex-shrink: 0;
+    color: #8491A3;
+}
+
+.dashboard .session-readings__notice p {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.6;
+}
+
+/* ==========================================
+   RESPONSIVIDADE
+========================================== */
+
+@media (max-width: 900px) {
+
+    .dashboard .session-readings__metadata {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+}
+
+@media (max-width: 600px) {
+
+    .dashboard .session-readings__metadata {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .dashboard .session-readings__title {
+        font-size: 23px;
+    }
+
+    .dashboard .session-readings__heading {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .dashboard .session-readings__notice {
+        align-items: flex-start;
+    }
+
+}
+
+/* ==========================================
+   CABEÇALHO - LEITURAS POR SESSÃO
+========================================== */
+
+.dashboard .session-readings__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    width: 100%;
+    margin-bottom: 24px;
+}
+
+.dashboard .session-readings__header-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.dashboard .session-readings__header-title {
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.4;
+    color: inherit;
+    margin: 0 0 8px;
+}
+
+.dashboard .session-readings__header-description {
+    font-size: 13px;
+    line-height: 1.6;
+    color: inherit;
+    opacity: 0.7;
+    margin: 0;
+}
+
+/* Botão de atualização */
+
+.dashboard .session-readings__refresh {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    gap: 8px;
+    width: auto;
+    min-height: 44px;
+    padding: 10px 18px;
+    margin-left: auto;
+    white-space: nowrap;
+}
+
+/* Alinhamento dos filtros */
+
+.dashboard .session-readings .monitoramento-filtros {
+    margin-top: 0;
+    margin-bottom: 20px;
+}
+
+/* Responsividade */
+
+@media (max-width: 600px) {
+
+    .dashboard .session-readings__header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 14px;
+    }
+
+    .dashboard .session-readings__refresh {
+        width: 100%;
+        margin-left: 0;
+    }
+
+}
+
+
+/* ==========================================
+   AVISO GLOBAL DE REGISTROS CARREGADOS
+========================================== */
+
+nav.logistics-actions.list-progress {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+
+    gap: 20px;
+    padding: 16px 20px;
+    margin: 0 0 24px;
+
+    background: rgba(100, 116, 139, 0.07);
+    border: 1px solid rgba(100, 116, 139, 0.20);
+    border-radius: 12px;
+}
+
+/* Informações do aviso */
+
+.list-progress__information {
+    display: flex;
+    align-items: center;
+    flex: 1 1 300px;
+    gap: 14px;
+    min-width: 0;
+}
+
+/* Ícone informativo */
+
+.list-progress__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+
+    background: rgba(100, 116, 139, 0.10);
+    color: #64748B;
+    border-radius: 10px;
+}
+
+/* Conteúdo */
+
+.list-progress__content {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-width: 0;
+}
+
+.list-progress__title {
+    color: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.list-progress__description {
+    color: inherit;
+    opacity: 0.75;
+    font-size: 13px;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.list-progress__additional,
+.list-progress__loading {
+    font-size: 12px;
+    line-height: 1.5;
+    opacity: 0.8;
+}
+
+/* Mensagens de erro */
+
+.list-progress__error {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #DC2626;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+/* ==========================================
+   BOTÕES ALINHADOS À DIREITA
+========================================== */
+
+.list-progress__actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex: 0 0 auto;
+
+    gap: 10px;
+    margin-left: auto;
+    flex-wrap: wrap;
+}
+
+.list-progress__actions > button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: auto;
+    min-height: 44px;
+    padding: 10px 16px;
+
+    gap: 8px;
+    white-space: nowrap;
+    flex: 0 0 auto;
+}
+
+/* Animação de atualização */
+
+.list-progress__spinning {
+    animation: list-progress-spin 0.8s linear infinite;
+}
+
+@keyframes list-progress-spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ==========================================
+   RESPONSIVIDADE
+========================================== */
+
+@media (max-width: 768px) {
+
+    nav.logistics-actions.list-progress {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 16px;
+        gap: 16px;
+    }
+
+    .list-progress__information {
+        flex: 0 0 auto;
+        align-items: flex-start;
+    }
+
+    .list-progress__actions {
+        width: 100%;
+        margin-left: 0;
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .list-progress__actions > button {
+        width: 100%;
+        white-space: normal;
+    }
+}
+
+
+/* ==========================================
+   TABELA DE VIAGENS
+========================================== */
+
+.viagens-page .viagem-table__scroll {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: auto;
+    border-radius: 10px;
+}
+
+.viagens-page .viagem-table {
+    width: 100%;
+    min-width: 1100px;
+    border-collapse: separate;
+    border-spacing: 0;
+    text-align: left;
+    font-size: 13px;
+}
+
+/* Legenda acessível */
+
+.viagem-table__caption {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+}
+
+/* Cabeçalho */
+
+.viagens-page .viagem-table thead th {
+    background: rgba(100, 116, 139, 0.09);
+    color: inherit;
+    padding: 15px 14px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+    border-top: 1px solid rgba(148, 163, 184, 0.2);
+    border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.viagem-table thead th:first-child {
+    border-radius: 10px 0 0 10px;
+}
+
+.viagem-table thead th:last-child {
+    border-radius: 0 10px 10px 0;
+}
+
+/* Registros */
+
+.viagens-page .viagem-table tbody td,
+.viagens-page .viagem-table tbody th {
+    padding: 18px 14px;
+    vertical-align: middle;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+    line-height: 1.5;
+}
+
+.viagem-table tbody tr {
+    transition: background 0.2s ease;
+}
+
+.viagem-table tbody tr:hover {
+    background: rgba(100, 116, 139, 0.05);
+}
+
+.viagem-table__row--selected {
+    background: rgba(132, 204, 22, 0.08);
+}
+
+/* Código da viagem */
+
+.viagem-table__code {
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+/* Rota */
+
+.viagem-table__route {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 160px;
+}
+
+.viagem-table__route svg {
+    color: #65A30D;
+    flex-shrink: 0;
+}
+
+.viagem-table__route-text {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.viagem-table__route-text strong {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.viagem-table__route-text span {
+    font-size: 12px;
+    opacity: 0.75;
+}
+
+/* Datas */
+
+.viagem-table__date {
+    white-space: nowrap;
+    font-size: 12px;
+}
+
+/* ==========================================
+   STATUS DAS VIAGENS
+========================================== */
+
+.viagem-table__status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 7px 11px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.viagem-table__status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+/* Em trânsito */
+
+.viagem-table__status--in_transit {
+    background: rgba(101, 163, 13, 0.12);
+    color: #65A30D;
+}
+
+/* Programada */
+
+.viagem-table__status--scheduled {
+    background: rgba(59, 130, 246, 0.12);
+    color: #3B82F6;
+}
+
+/* Concluída */
+
+.viagem-table__status--completed {
+    background: rgba(16, 185, 129, 0.12);
+    color: #059669;
+}
+
+/* Cancelada */
+
+.viagem-table__status--cancelled {
+    background: rgba(239, 68, 68, 0.12);
+    color: #DC2626;
+}
+
+/* Não informado */
+
+.viagem-table__status--unknown {
+    background: rgba(100, 116, 139, 0.12);
+    color: inherit;
+}
+
+/* ==========================================
+   BOTÃO DE AÇÃO
+========================================== */
+
+.viagens-page .viagem-table__action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    width: auto;
+    min-height: 36px;
+    padding: 8px 12px;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.viagem-table__empty {
+    text-align: center;
+    padding: 30px !important;
+    opacity: 0.7;
+}
+
+/* ==========================================
+   VIAGENS - ESPAÇAMENTO DOS DETALHES
+========================================== */
+
+.viagem-details-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    width: 100%;
+    min-width: 0;
+    margin-top: 24px;
+}
+
+.viagem-details-stack > * {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+/* Cabeçalho dos cards */
+
+.viagem-operation__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.viagem-operation__header h2,
+.viagem-operation__header h3 {
+    margin: 0;
+}
+
+/* Formulário da operação */
+
+.viagem-operation__form {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    width: 100%;
+}
+
+.viagem-operation__form label {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.viagem-operation__form select,
+.viagem-operation__form textarea,
+.viagem-operation__form input {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.viagem-operation__form textarea {
+    min-height: 110px;
+    resize: vertical;
+}
+
+/* Avisos informativos */
+
+.viagem-operation__notice {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    background: rgba(100, 116, 139, 0.07);
+    border: 1px solid rgba(100, 116, 139, 0.16);
+    border-radius: 10px;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.viagem-operation__notice svg {
+    flex-shrink: 0;
+    color: #64748B;
+}
+
+/* Botão salvar viagem */
+
+.viagem-operation__actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.viagem-operation__actions > button {
+    width: auto;
+    min-width: 160px;
+    min-height: 44px;
+    padding: 10px 24px;
+}
+
+/* Responsividade */
+
+@media (max-width: 768px) {
+
+    .viagem-details-stack {
+        gap: 20px;
+    }
+
+    .viagem-operation__header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .viagem-operation__actions > button {
+        width: 100%;
+    }
+
+    .viagem-operation__notice {
+        align-items: flex-start;
+    }
+}
+
+
+/* ==========================================
+   VIAGENS - ESPAÇAMENTO ENTRE OS CARDS
+========================================== */
+
+.viagens-page .viagens-page__details {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    width: 100%;
+    min-width: 0;
+    margin-top: 28px;
+    scroll-margin-top: 100px;
+}
+
+.viagens-page__details > * {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+/* ==========================================
+   DETALHES DA VIAGEM
+========================================== */
+
+.viagens-page .trip-details {
+    padding: 28px;
+}
+
+.trip-details__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 28px;
+}
+
+.trip-details__header-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.trip-details__eyebrow {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    opacity: 0.65;
+}
+
+.trip-details__title {
+    font-size: 25px;
+    font-weight: 700;
+    line-height: 1.3;
+    color: #65A30D;
+    margin: 0 0 12px;
+}
+
+.trip-details__route {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+    font-weight: 500;
+    margin-bottom: 8px;
+    overflow-wrap: anywhere;
+}
+
+.trip-details__route svg {
+    flex-shrink: 0;
+    color: #65A30D;
+}
+
+.trip-details__description {
+    font-size: 13px;
+    line-height: 1.6;
+    opacity: 0.7;
+    margin: 0;
+}
+
+/* ==========================================
+   INFORMAÇÕES DA VIAGEM
+========================================== */
+
+.viagens-page .trip-details__info {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    margin: 0 0 28px;
+}
+
+.viagens-page .trip-details__item {
+    padding: 18px;
+    min-width: 0;
+    border-radius: 10px;
+    background: rgba(100, 116, 139, 0.07);
+    border: 1px solid rgba(100, 116, 139, 0.15);
+}
+
+.trip-details__item dt {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    opacity: 0.75;
+    margin-bottom: 12px;
+}
+
+.trip-details__item dd {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
+
+.trip-details__item dd svg {
+    color: #65A30D;
+    flex-shrink: 0;
+}
+
+/* ==========================================
+   CARGAS DA VIAGEM
+========================================== */
+
+.viagens-page .trip-details__loads {
+    border-top: 1px solid rgba(148, 163, 184, 0.25);
+    padding-top: 24px;
+    margin-top: 0;
+}
+
+.trip-details__loads-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 12px;
+}
+
+.trip-details__loads-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 6px;
+}
+
+.trip-details__loads-header > button {
+    width: auto;
+    min-height: 42px;
+    padding: 10px 18px;
+}
+
+/* ==========================================
+   OPERAÇÃO DA VIAGEM
+========================================== */
+
+.viagens-page .viagem-operation {
+    padding: 28px;
+}
+
+.viagem-operation__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-bottom: 28px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+.viagem-operation__heading {
+    flex: 1;
+    min-width: 0;
+}
+
+.viagem-operation__title {
+    font-size: 21px;
+    font-weight: 600;
+    margin: 0 0 8px;
+    line-height: 1.4;
+}
+
+.viagem-operation__description {
+    font-size: 13px;
+    line-height: 1.6;
+    opacity: 0.7;
+    margin: 0;
+}
+
+/* Botão de atualização */
+
+.viagens-page .viagem-operation__refresh {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: auto;
+    min-height: 44px;
+    padding: 10px 18px;
+    margin-left: auto;
+    white-space: nowrap;
+}
+
+/* ==========================================
+   FORMULÁRIO DA OPERAÇÃO
+========================================== */
+
+.viagens-page .viagem-operation__form {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    border: none;
+}
+
+.viagem-operation__form label {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.viagem-operation__form select,
+.viagem-operation__form input,
+.viagem-operation__form textarea {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.viagem-operation__form select,
+.viagem-operation__form input {
+    min-height: 44px;
+}
+
+.viagem-operation__form textarea {
+    min-height: 120px;
+    padding: 14px;
+    line-height: 1.6;
+    resize: vertical;
+}
+
+/* ==========================================
+   AVISOS INFORMATIVOS
+========================================== */
+
+.viagem-operation__notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px 18px;
+    border-radius: 10px;
+    background: rgba(100, 116, 139, 0.07);
+    border: 1px solid rgba(100, 116, 139, 0.16);
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.viagem-operation > .viagem-operation__notice {
+    margin-bottom: 20px;
+}
+
+.viagem-operation__notice svg {
+    flex-shrink: 0;
+    color: #64748B;
+    margin-top: 2px;
+}
+
+.viagem-operation__notice strong {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.viagem-operation__notice p {
+    margin: 0;
+    opacity: 0.8;
+}
+
+.viagem-operation__notice--error {
+    background: rgba(239, 68, 68, 0.08);
+    border-color: rgba(239, 68, 68, 0.25);
+}
+
+.viagem-operation__notice--error svg {
+    color: #DC2626;
+}
+
+.viagem-operation__notice--success {
+    background: rgba(16, 185, 129, 0.08);
+    border-color: rgba(16, 185, 129, 0.25);
+}
+
+.viagem-operation__notice--success svg {
+    color: #059669;
+}
+
+/* ==========================================
+   BOTÃO SALVAR VIAGEM
+========================================== */
+
+.viagem-operation__actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+    padding-top: 24px;
+    border-top: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+.viagens-page .viagem-operation__actions > button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: auto;
+    min-width: 180px;
+    min-height: 44px;
+    padding: 12px 24px;
+}
+
+/* ==========================================
+   RESPONSIVIDADE
+========================================== */
+
+@media (max-width: 1000px) {
+
+    .viagens-page .trip-details__info {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+
+    .viagens-page .viagens-page__details {
+        gap: 20px;
+        margin-top: 20px;
+    }
+
+    .viagens-page .trip-details,
+    .viagens-page .viagem-operation {
+        padding: 20px;
+    }
+
+    .trip-details__header,
+    .viagem-operation__header,
+    .trip-details__loads-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .viagens-page .trip-details__info {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .trip-details__header > .viagem-table__status {
+        align-self: flex-start;
+    }
+
+    .viagens-page .viagem-operation__refresh,
+    .viagens-page .viagem-operation__actions > button,
+    .trip-details__loads-header > button {
+        width: 100%;
+        margin-left: 0;
+        white-space: normal;
+    }
+
+    .trip-details__title {
+        font-size: 22px;
+    }
+
+    .viagem-operation__title {
+        font-size: 19px;
+    }
+}

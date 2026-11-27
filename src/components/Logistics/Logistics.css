@@ -1,0 +1,656 @@
+/* ==========================================
+   ESTRUTURA DA PÁGINA
+========================================== */
+
+.logistics-page {
+    display: grid;
+    gap: 24px;
+}
+
+.logistics-page > * {
+    min-width: 0;
+}
+
+.logistics-page-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.logistics-page-heading .page-title {
+    margin: 0;
+}
+
+
+/* ==========================================
+   AVISOS INFORMATIVOS
+========================================== */
+
+.logistics-notice {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+
+    padding: 16px 18px;
+    margin: 0;
+
+    border: 1px solid var(--color-border, #d9dfe7);
+    border-radius: 12px;
+
+    background: rgba(100, 116, 139, 0.08);
+    color: inherit;
+}
+
+.logistics-notice__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    width: 40px;
+    height: 40px;
+
+    border-radius: 10px;
+
+    background: rgba(100, 116, 139, 0.12);
+    color: #64748b;
+}
+
+.logistics-notice__content {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+
+    flex: 1;
+    min-width: 0;
+}
+
+.logistics-notice__content strong {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.logistics-notice__content p {
+    margin: 0;
+
+    font-size: 13px;
+    line-height: 1.6;
+
+    opacity: 0.8;
+}
+
+.logistics-notice--success {
+    background: rgba(101, 163, 13, 0.08);
+    border-color: rgba(101, 163, 13, 0.25);
+    color: #65a30d;
+}
+
+.logistics-notice--error {
+    background: rgba(220, 38, 38, 0.06);
+    border-color: rgba(220, 38, 38, 0.2);
+    color: #dc2626;
+}
+
+
+/* ==========================================
+   CABEÇALHOS DOS CARDS
+========================================== */
+
+.logistics-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.logistics-section-header > div:first-child {
+    flex: 1;
+    min-width: 0;
+}
+
+.logistics-section-header h2 {
+    margin: 0;
+
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.4;
+
+    overflow-wrap: anywhere;
+}
+
+.logistics-section-header p {
+    margin: 6px 0 0;
+
+    font-size: 13px;
+    line-height: 1.5;
+
+    color: var(--color-text-muted, #64748b);
+}
+
+.logistics-header-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+
+    gap: 10px;
+}
+
+.logistics-section-header .button,
+.logistics-header-actions .button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 8px;
+    width: auto;
+    flex-shrink: 0;
+}
+
+
+/* ==========================================
+   FORMULÁRIOS
+========================================== */
+
+.logistics-controls {
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: 16px;
+}
+
+.logistics-controls > * {
+    min-width: 0;
+}
+
+.logistics-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+
+    gap: 12px;
+    margin-block: 16px;
+}
+
+.logistics-actions > * {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+}
+
+.logistics-form {
+    min-width: 0;
+
+    display: grid;
+    gap: 16px;
+
+    border: 0;
+    border-block: 1px solid var(--color-border);
+
+    padding: 20px 0;
+    margin-block: 20px;
+}
+
+.logistics-form > label {
+    display: grid;
+    gap: 8px;
+}
+
+.logistics-form textarea {
+    width: 100%;
+    min-height: 100px;
+
+    box-sizing: border-box;
+    resize: vertical;
+
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+
+    padding: 12px;
+    font: inherit;
+}
+
+
+/* ==========================================
+   CAMPO DE BUSCA
+========================================== */
+
+.logistics-search {
+    display: flex;
+    flex-direction: column;
+
+    gap: 8px;
+    margin-block: 20px;
+}
+
+.logistics-search > label {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.logistics-search__field {
+    position: relative;
+    width: 100%;
+}
+
+.logistics-search__icon {
+    position: absolute;
+
+    top: 50%;
+    left: 14px;
+
+    transform: translateY(-50%);
+
+    color: var(--color-text-muted, #64748b);
+
+    pointer-events: none;
+}
+
+.logistics-search__field input {
+    display: block;
+
+    width: 100%;
+    min-height: 44px;
+
+    box-sizing: border-box;
+
+    padding: 12px 16px 12px 44px;
+
+    border: 1px solid var(--color-border, #d9dfe7);
+    border-radius: 10px;
+
+    background: var(--color-surface, transparent);
+    color: inherit;
+
+    font: inherit;
+
+    outline: none;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.logistics-search__field input::placeholder {
+    color: var(--color-text-muted, #94a3b8);
+}
+
+.logistics-search__field input:focus {
+    border-color: #a3d900;
+
+    box-shadow:
+        0 0 0 3px rgba(163, 217, 0, 0.12);
+}
+
+.logistics-search__field input:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+
+/* ==========================================
+   TABELA DE CARGAS E CAIXAS
+========================================== */
+
+.logistics-table {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.logistics-table table {
+    width: 100%;
+    min-width: 680px;
+
+    border-collapse: collapse;
+}
+
+.logistics-table caption {
+    text-align: left;
+
+    padding-block: 12px 16px;
+
+    font-size: 13px;
+    font-weight: 500;
+
+    color: var(--color-text-muted, #64748b);
+}
+
+.logistics-table th,
+.logistics-table td {
+    text-align: left;
+    vertical-align: middle;
+
+    padding: 16px 12px;
+
+    border-bottom: 1px solid var(--color-border);
+
+    overflow-wrap: anywhere;
+}
+
+.logistics-table th {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.logistics-table td {
+    font-size: 14px;
+}
+
+.logistics-table tbody tr {
+    transition: background 0.2s ease;
+}
+
+.logistics-table tbody tr:hover {
+    background: rgba(100, 116, 139, 0.035);
+}
+
+.logistics-record-name {
+    font-weight: 500;
+    line-height: 1.5;
+}
+
+.logistics-table-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+
+    gap: 10px;
+}
+
+.logistics-table-actions .button {
+    width: auto;
+}
+
+
+/* ==========================================
+   CANETINHA VERDE DE EDIÇÃO
+========================================== */
+
+.logistics-edit-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    width: 40px;
+    height: 40px;
+
+    padding: 0;
+
+    border: 1px solid rgba(101, 163, 13, 0.22);
+    border-radius: 10px;
+
+    background: rgba(132, 204, 22, 0.09);
+    color: #65a30d;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.logistics-edit-button:hover:not(:disabled) {
+    background: rgba(132, 204, 22, 0.2);
+    border-color: #84cc16;
+
+    transform: translateY(-1px);
+}
+
+.logistics-edit-button:focus-visible {
+    outline: 2px solid #84cc16;
+    outline-offset: 3px;
+}
+
+.logistics-edit-button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+
+/* ==========================================
+   INDICADORES DE ESTADO
+========================================== */
+
+.logistics-status {
+    display: inline-flex;
+    align-items: center;
+
+    gap: 7px;
+
+    padding: 6px 10px;
+
+    border: 1px solid transparent;
+    border-radius: 20px;
+
+    font-size: 12px;
+    font-weight: 500;
+
+    white-space: nowrap;
+}
+
+.logistics-status__dot {
+    width: 6px;
+    height: 6px;
+
+    flex-shrink: 0;
+
+    border-radius: 50%;
+
+    background: currentColor;
+}
+
+.logistics-status--active {
+    background: rgba(132, 204, 22, 0.12);
+    border-color: rgba(101, 163, 13, 0.22);
+
+    color: #65a30d;
+}
+
+.logistics-status--success {
+    background: rgba(22, 163, 74, 0.1);
+    border-color: rgba(22, 163, 74, 0.2);
+
+    color: #16a34a;
+}
+
+.logistics-status--warning {
+    background: rgba(245, 158, 11, 0.1);
+    border-color: rgba(245, 158, 11, 0.22);
+
+    color: #b77908;
+}
+
+.logistics-status--danger {
+    background: rgba(220, 38, 38, 0.08);
+    border-color: rgba(220, 38, 38, 0.18);
+
+    color: #dc2626;
+}
+
+.logistics-status--neutral {
+    background: rgba(100, 116, 139, 0.1);
+    border-color: rgba(100, 116, 139, 0.2);
+
+    color: #64748b;
+}
+
+
+/* ==========================================
+   PAGINAÇÃO
+========================================== */
+
+.logistics-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+
+    gap: 12px;
+
+    margin-top: 20px;
+    padding-top: 8px;
+}
+
+.logistics-pagination .button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 6px;
+    width: auto;
+}
+
+.logistics-pagination__page {
+    font-size: 13px;
+    font-weight: 500;
+
+    color: var(--color-text-muted, #64748b);
+}
+
+
+/* ==========================================
+   DETALHES DA CARGA
+========================================== */
+
+.logistics-detail {
+    display: grid;
+
+    gap: 24px;
+
+    margin-top: 24px;
+    padding-top: 24px;
+
+    border-top: 1px solid var(--color-border);
+}
+
+.logistics-detail > * {
+    min-width: 0;
+}
+
+.operational-evidence {
+    overflow-wrap: anywhere;
+}
+
+.operational-evidence dd {
+    margin-inline-start: 16px;
+}
+
+
+/* ==========================================
+   ESTADO VAZIO
+========================================== */
+
+.logistics-empty {
+    padding: 28px 20px;
+
+    border: 1px dashed var(--color-border);
+    border-radius: 12px;
+
+    text-align: center;
+    font-size: 14px;
+
+    color: var(--color-text-muted, #64748b);
+}
+
+
+/* ==========================================
+   ANIMAÇÃO DE ATUALIZAÇÃO
+========================================== */
+
+.logistics-spin {
+    animation: logistics-rotate 1s linear infinite;
+}
+
+@keyframes logistics-rotate {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .logistics-spin {
+        animation: none;
+    }
+
+    .logistics-edit-button {
+        transition: none;
+    }
+}
+
+
+/* ==========================================
+   RESPONSIVIDADE
+========================================== */
+
+@media (max-width: 900px) {
+    .logistics-section-header {
+        align-items: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .logistics-header-actions {
+        justify-content: flex-start;
+    }
+}
+
+@media (max-width: 700px) {
+    .logistics-page {
+        gap: 16px;
+    }
+
+    .logistics-controls {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .logistics-section-header {
+        flex-direction: column;
+        align-items: stretch;
+
+        gap: 14px;
+        margin-bottom: 20px;
+    }
+
+    .logistics-section-header > .button {
+        width: 100%;
+    }
+
+    .logistics-header-actions {
+        width: 100%;
+    }
+
+    .logistics-header-actions .button {
+        flex: 1;
+    }
+
+    .logistics-notice {
+        align-items: flex-start;
+        padding: 14px;
+    }
+
+    .logistics-notice__icon {
+        width: 34px;
+        height: 34px;
+    }
+
+    .logistics-pagination {
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .logistics-table th,
+    .logistics-table td {
+        padding: 12px;
+    }
+}

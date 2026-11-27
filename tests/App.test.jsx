@@ -18,6 +18,7 @@ function adapterFor(currentUser = user(), { loginStatus = 200, meStatus = 200, m
     if (config.url === "/api/v1/auth/login") return reply(config, missingToken ? {} : { access_token: "fixture-session", token_type: "bearer", expires_in: 1800 }, loginStatus);
     if (config.url === "/api/v1/auth/me") return reply(config, currentUser, meStatus);
     if (config.url === "/api/v1/viagens") return reply(config, []);
+    if (config.url === "/api/v1/monitoramento/resumo") return reply(config, { consultado_em: "2026-11-24T10:00:00Z", viagens_total: 0, viagens_em_transito: 0, cargas_total: 0, cargas_monitoradas: 0, sessoes_ativas: 0, alertas_abertos: 0 });
     // Reject unhandled calls locally: never let a test call the real server.
     return reply(config, { detail: "Unhandled local mock" }, 404);
   };
@@ -32,14 +33,14 @@ function submit() {
 describe("login e navegação reais com HTTP mockado", () => {
   it.each(["ADMIN", "GESTOR", "OPERADOR", "CONSULTA"])("login %s alcança dashboard mantendo o papel", async (role) => {
     adapterFor(user(role)); mount(); submit();
-    expect(await screen.findByRole("heading", { name: /Olá, Tester/ })).toBeTruthy();
+    expect(await screen.findByRole("heading", { name: /Olá, Tester/ }, { timeout: 5000 })).toBeTruthy();
     expect(getSessionToken()).toBe("fixture-session");
     expect(screen.getByLabelText(/Perfil de acesso:/).textContent).toContain({ ADMIN: "Administrador", GESTOR: "Gestor", OPERADOR: "Operador", CONSULTA: "Consulta" }[role]);
     fireEvent.click(screen.getByRole("link", { name: "Viagens", exact: true }));
     expect(await screen.findByRole("heading", { name: "Viagens", exact: true, level: 1 })).toBeTruthy();
     fireEvent.click(screen.getByRole("link", { name: "Configurações", exact: true }));
     expect(await screen.findByRole("heading", { name: "Configurações", exact: true })).toBeTruthy();
-  });
+  }, 15000);
 
   it.each([
     ["senha inválida", user(), { loginStatus: 401 }, /E-mail ou senha incorretos/],

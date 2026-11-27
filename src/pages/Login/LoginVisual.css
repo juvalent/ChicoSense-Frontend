@@ -1,0 +1,960 @@
+/* ==========================================
+   CHICOSENSE — LOGIN
+========================================== */
+
+.chico-login {
+
+    --login-dark: #293343;
+    --login-dark-deep: #1c2533;
+    --login-green: #c5f51b;
+    --login-muted: #94a3b8;
+
+    display: grid;
+    grid-template-columns:
+        minmax(0, 1.05fr)
+        minmax(0, 1fr);
+
+    width: 100%;
+    min-height: 100vh;
+    min-height: 100dvh;
+
+    background: var(--color-background, #eef1f4);
+}
+
+.chico-login *,
+.chico-login *::before,
+.chico-login *::after {
+    box-sizing: border-box;
+}
+
+
+/* ==========================================
+   PAINEL DE APRESENTAÇÃO
+========================================== */
+
+.chico-login__presentation {
+
+    position: relative;
+    isolation: isolate;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    gap: 48px;
+
+    min-width: 0;
+
+    padding: clamp(32px, 5vw, 88px);
+
+    color: #ffffff;
+
+    background: linear-gradient(
+        145deg,
+        #293343 0%,
+        #232e3e 60%,
+        #192330 100%
+    );
+
+    overflow: hidden;
+}
+
+
+/* GRADE TECNOLÓGICA */
+
+.chico-login__grid {
+
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+
+    pointer-events: none;
+
+    background-image:
+        linear-gradient(
+            rgba(255, 255, 255, 0.025) 1px,
+            transparent 1px
+        ),
+        linear-gradient(
+            90deg,
+            rgba(255, 255, 255, 0.025) 1px,
+            transparent 1px
+        );
+
+    background-size: 48px 48px;
+
+    mask-image: linear-gradient(
+        to bottom,
+        transparent,
+        black
+    );
+}
+
+
+/* ILUMINAÇÃO VERDE */
+
+.chico-login__glow {
+
+    position: absolute;
+    z-index: -1;
+
+    bottom: -180px;
+    right: -180px;
+
+    width: 550px;
+    height: 550px;
+
+    border-radius: 50%;
+
+    background: radial-gradient(
+        circle,
+        rgba(197, 245, 27, 0.11),
+        transparent 70%
+    );
+
+    pointer-events: none;
+}
+
+
+/* CÍRCULOS DECORATIVOS */
+
+.chico-login__orbit {
+
+    position: absolute;
+    z-index: -1;
+
+    width: 520px;
+    height: 520px;
+
+    border: 1px solid rgba(197, 245, 27, 0.06);
+    border-radius: 50%;
+
+    pointer-events: none;
+}
+
+.chico-login__orbit--one {
+    right: -300px;
+    top: -180px;
+}
+
+.chico-login__orbit--two {
+    right: -250px;
+    top: -230px;
+}
+
+
+/* ==========================================
+   LOGOTIPO
+========================================== */
+
+.chico-login__brand {
+
+    position: relative;
+
+    display: flex;
+    align-items: center;
+
+    min-width: 0;
+}
+
+
+/* ==========================================
+   MENSAGEM PRINCIPAL
+========================================== */
+
+.chico-login__message {
+
+    position: relative;
+
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+
+    gap: 24px;
+
+    max-width: 680px;
+
+    animation: chico-login-reveal
+        0.9s ease-out 0.4s both;
+}
+
+
+/* ETIQUETA SUPERIOR */
+
+.chico-login__tag {
+
+    display: inline-flex;
+    align-items: center;
+
+    gap: 9px;
+
+    padding: 9px 14px;
+
+    border: 1px solid rgba(197, 245, 27, 0.20);
+    border-radius: 30px;
+
+    background: rgba(197, 245, 27, 0.07);
+    color: var(--login-green);
+
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1.3px;
+}
+
+.chico-login__tag-dot {
+
+    width: 7px;
+    height: 7px;
+
+    flex-shrink: 0;
+
+    border-radius: 50%;
+
+    background: var(--login-green);
+
+    box-shadow:
+        0 0 12px rgba(197, 245, 27, 0.45);
+}
+
+
+/* TÍTULO */
+
+.chico-login__message h1 {
+
+    margin: 0;
+
+    color: #ffffff;
+
+    font-size: clamp(34px, 3.7vw, 62px);
+    font-weight: 600;
+    letter-spacing: -1.8px;
+    line-height: 1.17;
+}
+
+.chico-login__message h1 span {
+    color: var(--login-green);
+}
+
+.chico-login__message > p {
+
+    max-width: 540px;
+    margin: 0;
+
+    color: #bdc9d9;
+
+    font-size: 16px;
+    line-height: 1.85;
+}
+
+
+/* ==========================================
+   RECURSOS DA PLATAFORMA
+========================================== */
+
+.chico-login__features {
+
+    display: flex;
+    flex-wrap: wrap;
+
+    gap: 12px;
+
+    margin-top: 4px;
+}
+
+.chico-login__feature {
+
+    display: inline-flex;
+    align-items: center;
+
+    gap: 9px;
+
+    padding: 12px 15px;
+
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+
+    background: rgba(255, 255, 255, 0.035);
+
+    color: #dce5ef;
+
+    font-size: 13px;
+
+    transition:
+        border-color 0.2s ease,
+        background 0.2s ease,
+        transform 0.2s ease;
+}
+
+.chico-login__feature svg {
+    color: var(--login-green);
+}
+
+.chico-login__feature:hover {
+
+    transform: translateY(-3px);
+
+    background: rgba(197, 245, 27, 0.06);
+    border-color: rgba(197, 245, 27, 0.3);
+}
+
+
+/* ==========================================
+   GRÁFICO DECORATIVO
+========================================== */
+
+.chico-login__graphic {
+
+    width: 100%;
+    max-width: 600px;
+
+    margin-top: 12px;
+
+    opacity: 0.85;
+}
+
+.chico-login__graphic svg {
+
+    display: block;
+
+    width: 100%;
+    height: 100px;
+
+    overflow: visible;
+}
+
+.chico-login__chart-grid {
+
+    stroke: rgba(255, 255, 255, 0.07);
+    stroke-width: 1;
+}
+
+.chico-login__chart-line {
+
+    fill: none;
+
+    stroke: var(--login-green);
+    stroke-width: 2.5;
+    stroke-linecap: round;
+
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+
+    animation: chico-login-chart
+        2s ease-out 1s forwards;
+}
+
+
+/* ==========================================
+   RODAPÉ DA APRESENTAÇÃO
+========================================== */
+
+.chico-login__footnote {
+
+    display: flex;
+    align-items: flex-start;
+
+    gap: 10px;
+
+    max-width: 560px;
+
+    color: #a7b5c7;
+}
+
+.chico-login__footnote svg {
+
+    flex-shrink: 0;
+
+    margin-top: 2px;
+}
+
+.chico-login__footnote p {
+
+    margin: 0;
+
+    font-size: 12px;
+    line-height: 1.7;
+}
+
+
+/* ==========================================
+   ÁREA DE LOGIN
+========================================== */
+
+.chico-login__form-area {
+
+    position: relative;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    min-width: 0;
+
+    padding: 48px 32px;
+
+    background: var(--color-background, #eef1f4);
+}
+
+.chico-login__form-wrapper {
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 24px;
+
+    width: 100%;
+    max-width: 470px;
+
+    animation: chico-login-reveal
+        0.8s ease-out 0.25s both;
+}
+
+
+/* ==========================================
+   CARD DO FORMULÁRIO
+========================================== */
+
+.chico-login__form {
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 24px;
+
+    width: 100%;
+
+    padding: clamp(24px, 3vw, 44px);
+
+    background: var(--color-surface, #ffffff);
+    color: var(--color-text, #293343);
+
+    border: 1px solid var(--color-border, #dce3eb);
+    border-radius: 22px;
+
+    box-shadow:
+        0 20px 60px rgba(15, 23, 42, 0.06),
+        0 4px 12px rgba(15, 23, 42, 0.025);
+}
+
+
+/* ==========================================
+   CABEÇALHO DO FORMULÁRIO
+========================================== */
+
+.chico-login__form-header {
+
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+
+    gap: 12px;
+
+    margin-bottom: 4px;
+}
+
+.chico-login__security-icon {
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 54px;
+    height: 54px;
+
+    margin-bottom: 8px;
+
+    background: rgba(132, 204, 22, 0.12);
+    color: #65a30d;
+
+    border: 1px solid rgba(132, 204, 22, 0.16);
+    border-radius: 15px;
+}
+
+.chico-login__eyebrow {
+
+    color: var(--color-text-muted, #64748b);
+
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+}
+
+.chico-login__form-header h2 {
+
+    margin: 0;
+
+    font-size: clamp(26px, 2.3vw, 34px);
+    font-weight: 600;
+    letter-spacing: -0.9px;
+    line-height: 1.25;
+}
+
+.chico-login__form-header p {
+
+    margin: 0;
+
+    color: var(--color-text-muted, #64748b);
+
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+
+/* ==========================================
+   CAMPOS DO FORMULÁRIO
+========================================== */
+
+.chico-login__field {
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 9px;
+}
+
+.chico-login__field label {
+
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.chico-login__input-wrapper {
+
+    position: relative;
+
+    display: flex;
+    align-items: center;
+
+    width: 100%;
+}
+
+.chico-login__input-icon {
+
+    position: absolute;
+    left: 15px;
+
+    color: #94a3b8;
+
+    pointer-events: none;
+
+    transition: color 0.2s ease;
+}
+
+.chico-login__input-wrapper input {
+
+    width: 100%;
+    min-width: 0;
+    height: 54px;
+
+    padding: 0 44px;
+
+    border: 1px solid var(--color-border, #dce3eb);
+    border-radius: 11px;
+
+    background: var(--color-background, #f5f7f9);
+    color: inherit;
+
+    font-family: inherit;
+    font-size: 14px;
+
+    outline: none;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.chico-login__input-wrapper input::placeholder {
+
+    color: #94a3b8;
+
+    font-size: 13px;
+}
+
+.chico-login__input-wrapper input:focus {
+
+    border-color: #84cc16;
+
+    box-shadow:
+        0 0 0 4px rgba(132, 204, 22, 0.10);
+}
+
+.chico-login__input-wrapper:focus-within
+.chico-login__input-icon {
+    color: #65a30d;
+}
+
+.chico-login__input-wrapper input:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
+
+/* ==========================================
+   VISUALIZAR SENHA
+========================================== */
+
+.chico-login__password-toggle {
+
+    position: absolute;
+    right: 10px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 34px;
+    height: 34px;
+
+    padding: 0;
+
+    background: transparent;
+    color: #94a3b8;
+
+    border: 0;
+    border-radius: 8px;
+
+    cursor: pointer;
+}
+
+.chico-login__password-toggle:hover {
+
+    background: rgba(100, 116, 139, 0.08);
+    color: #65a30d;
+}
+
+.chico-login__password-toggle:disabled {
+    cursor: not-allowed;
+}
+
+
+/* ==========================================
+   BOTÃO DE ENTRADA
+========================================== */
+
+.chico-login__submit {
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 12px;
+
+    width: 100%;
+    min-height: 54px;
+
+    padding: 14px 20px;
+
+    border: 0;
+    border-radius: 11px;
+
+    background: var(--login-green);
+    color: #293343;
+
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 5px 18px rgba(132, 204, 22, 0.16);
+
+    transition:
+        background 0.2s ease,
+        box-shadow 0.2s ease,
+        transform 0.2s ease;
+}
+
+.chico-login__submit:not(:disabled):hover {
+
+    background: #b9e91b;
+
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 8px 22px rgba(132, 204, 22, 0.25);
+}
+
+.chico-login__submit:not(:disabled):active {
+    transform: scale(0.99);
+}
+
+.chico-login__submit:disabled {
+
+    opacity: 0.7;
+    cursor: wait;
+}
+
+.chico-login__submit:focus-visible,
+.chico-login__password-toggle:focus-visible {
+
+    outline: 2px solid #84cc16;
+    outline-offset: 4px;
+}
+
+.chico-login__submit svg {
+
+    flex-shrink: 0;
+
+    transition: transform 0.2s ease;
+}
+
+.chico-login__submit:not(:disabled):hover svg {
+    transform: translateX(4px);
+}
+
+
+/* ==========================================
+   MENSAGEM DE ERRO
+========================================== */
+
+.chico-login__error {
+
+    display: flex;
+    align-items: flex-start;
+
+    gap: 10px;
+
+    padding: 14px;
+
+    border: 1px solid rgba(239, 68, 68, 0.20);
+    border-radius: 10px;
+
+    background: rgba(239, 68, 68, 0.07);
+    color: var(--color-danger, #dc2626);
+
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.chico-login__error svg {
+    flex-shrink: 0;
+}
+
+.chico-login__error p {
+    margin: 0;
+}
+
+
+/* ==========================================
+   SEGURANÇA E COPYRIGHT
+========================================== */
+
+.chico-login__secure {
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 8px;
+
+    color: var(--color-text-muted, #64748b);
+
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+.chico-login__secure svg {
+
+    flex-shrink: 0;
+
+    color: #65a30d;
+}
+
+.chico-login__copyright {
+
+    margin: 0;
+
+    color: var(--color-text-muted, #64748b);
+
+    text-align: center;
+    font-size: 11px;
+    line-height: 1.6;
+}
+
+
+/* ==========================================
+   ANIMAÇÕES
+========================================== */
+
+.chico-login__spinner {
+
+    animation: chico-login-spin
+        0.8s linear infinite;
+}
+
+@keyframes chico-login-spin {
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes chico-login-reveal {
+
+    from {
+        opacity: 0;
+        transform: translateY(16px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes chico-login-chart {
+
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+
+/* ==========================================
+   RESPONSIVIDADE — TABLET
+========================================== */
+
+@media (max-width: 1000px) {
+
+    .chico-login__presentation {
+        padding: 40px;
+    }
+
+    .chico-login__message h1 {
+        font-size: 40px;
+    }
+
+    .chico-login__message > p {
+        font-size: 14px;
+    }
+
+    .chico-login__form-area {
+        padding: 32px 24px;
+    }
+
+    .chico-login__form {
+        padding: 28px;
+    }
+}
+
+
+/* ==========================================
+   RESPONSIVIDADE — CELULAR
+========================================== */
+
+@media (max-width: 760px) {
+
+    .chico-login {
+
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .chico-login__presentation {
+
+        padding: 28px 24px;
+        gap: 28px;
+    }
+
+    .chico-login__brand .logo-intro {
+        width: 190px;
+    }
+
+    .chico-login__message {
+        gap: 16px;
+    }
+
+    .chico-login__message h1 {
+
+        font-size: clamp(28px, 6vw, 40px);
+        letter-spacing: -1px;
+    }
+
+    .chico-login__message > p {
+        font-size: 13px;
+    }
+
+    .chico-login__features {
+        gap: 8px;
+    }
+
+    .chico-login__feature {
+
+        padding: 9px 12px;
+
+        font-size: 11px;
+    }
+
+    .chico-login__feature svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    .chico-login__graphic {
+        display: none;
+    }
+
+    .chico-login__footnote p {
+        font-size: 10px;
+    }
+
+    .chico-login__form-area {
+
+        padding: 28px 20px 36px;
+    }
+
+    .chico-login__form {
+
+        padding: 28px 24px;
+
+        gap: 22px;
+
+        border-radius: 18px;
+    }
+}
+
+
+/* ==========================================
+   TELAS MENORES
+========================================== */
+
+@media (max-width: 380px) {
+
+    .chico-login__form {
+        padding: 22px 18px;
+    }
+
+    .chico-login__form-area {
+        padding-inline: 12px;
+    }
+
+    .chico-login__tag {
+        font-size: 9px;
+    }
+}
+
+
+/* ==========================================
+   ACESSIBILIDADE
+========================================== */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .chico-login__message,
+    .chico-login__form-wrapper,
+    .chico-login__chart-line,
+    .chico-login__spinner {
+        animation: none;
+    }
+
+    .chico-login__chart-line {
+        stroke-dashoffset: 0;
+    }
+
+    .chico-login__feature,
+    .chico-login__submit,
+    .chico-login__submit svg {
+        transition: none;
+    }
+}

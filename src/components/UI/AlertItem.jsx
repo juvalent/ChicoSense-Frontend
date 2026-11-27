@@ -23,7 +23,8 @@ const severityConfig = {
 const statusLabels = {
   new: "Novo",
   monitoring: "Em acompanhamento",
-  resolved: "Normalizado",
+  resolved: "Resolvido",
+  discarded: "Descartado",
 };
 
 function formatDate(value) {

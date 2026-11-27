@@ -1,0 +1,6 @@
+ .visual-notice { display:flex; align-items:flex-start; gap:12px; padding:16px; border:1px solid var(--color-border, #d5dce5); border-radius:12px; background:rgba(100,116,139,.08); margin-block:12px; }
+.visual-notice > svg { flex-shrink:0; color:#64748b; }
+.visual-notice strong { font-size:14px; }
+.visual-notice p { margin:5px 0 0; font-size:13px; line-height:1.5; }
+ .monitoring-visual { display:grid; gap:20px; }
+.monitoring-visual .logistics-actions { display:flex; flex-wrap:wrap; justify-content:flex-end; align-items:center; gap:12px; margin-top:16px; }
